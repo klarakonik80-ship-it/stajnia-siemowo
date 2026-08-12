@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grafik Stajnia Siemowo</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;background:#f5f5f5;color:#222}
+header{background:#fff;padding:18px 16px;position:sticky;top:0;z-index:2;box-shadow:0 1px 6px #bbb}
+h1{margin:0 0 12px;font-size:24px}.bar{display:flex;gap:8px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:10px 14px;font-size:16px;background:#4b8f4b;color:white}
+button.gray{background:#ddd;color:#222}.wrap{padding:12px;overflow:auto}
+.week{display:grid;grid-template-columns:70px repeat(7,minmax(150px,1fr));min-width:1130px}
+.cell{background:white;border:1px solid #ddd;min-height:58px;padding:6px;box-sizing:border-box}
+.head{font-weight:700;text-align:center;background:#eee;min-height:42px}
+.time{font-weight:600;text-align:center;background:#fafafa}
+.ride{background:#eaf4e8;border-left:4px solid #4b8f4b;border-radius:8px;padding:7px;margin:3px 0;font-size:13px}
+.ride b{display:block}.ride button{font-size:12px;padding:4px 7px;margin-top:4px}
+dialog{border:0;border-radius:16px;padding:20px;max-width:420px;width:calc(100% - 40px)}
+label{display:block;margin:10px 0 4px;font-weight:600}
+input,select{width:100%;padding:10px;box-sizing:border-box;border:1px solid #bbb;border-radius:8px;font-size:16px}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+</style>
+</head>
+<body>
+<header>
+<h1>🐴 Grafik Stajnia Siemowo</h1>
+<div class="bar">
+<button onclick="prevWeek()">← Poprzedni</button>
+<button class="gray" onclick="today()">Dziś</button>
+<button onclick="nextWeek()">Następny →</button>
+<button onclick="openAdd()">＋ Dodaj jazdę</button>
+</div>
+<div id="range" style="margin-top:10px;font-weight:600"></div>
+</header>
+<div class="wrap"><div id="calendar" class="week"></div></div>
+
+<dialog id="dlg">
+<h2 id="dlgTitle">Dodaj jazdę</h2>
+<form id="form">
+<input type="hidden" id="id">
+<label>Data</label><input id="date" type="date" required>
+<label>Godzina</label><input id="time" type="time" min="07:00" max="20:00" required>
+<label>Jeździec</label><input id="rider" required>
+<label>Koń</label><input id="horse" required>
+<label>Instruktor</label><input id="instructor" required>
+<label>Rodzaj jazdy</label>
+<select id="type"><option>Jazda indywidualna</option><option>Jazda grupowa</option><option>Hipoterapia</option><option>Lonżowanie</option><option>Trening</option></select>
+<div class="actions"><button type="button" class="gray" onclick="dlg.close()">Anuluj</button><button type="submit">Zapisz</button></div>
+</form>
+</dialog>
+
+<script>
+const days=["Pon","Wt","Śr","Czw","Pt","Sob","Nd"], startHour=7,endHour=20;
+let weekStart=monday(new Date()), rides=JSON.parse(localStorage.getItem("siemowo_rides")||"[]");
+const dlg=document.getElementById("dlg"), form=document.getElementById("form");
+function monday(d){d=new Date(d);let n=d.getDay()||7;d.setDate(d.getDate()-n+1);d.setHours(0,0,0,0);return d}
+function iso(d){return d.toISOString().slice(0,10)}
+function fmt(d){return d.toLocaleDateString("pl-PL",{day:"2-digit",month:"2-digit"})}
+function render(){
+ document.getElementById("range").textContent=`Tydzień: ${fmt(weekStart)} – ${fmt(new Date(weekStart.getTime()+6*864e5))}`;
+ let c=document.getElementById("calendar");c.innerHTML="";
+ c.insertAdjacentHTML("beforeend",'<div class="cell head">Godz.</div>');
+ for(let i=0;i<7;i++){let d=new Date(weekStart.getTime()+i*864e5);c.insertAdjacentHTML("beforeend",`<div class="cell head">${days[i]}<br>${fmt(d)}</div>`)}
+ for(let h=startHour;h<=endHour;h++){
+   c.insertAdjacentHTML("beforeend",`<div class="cell time">${String(h).padStart(2,"0")}:00</div>`);
+   for(let i=0;i<7;i++){
+     let d=new Date(weekStart.getTime()+i*864e5), ds=iso(d);
+     let list=rides.filter(x=>x.date===ds && Number(x.time.slice(0,2))===h);
+     let cell=document.createElement("div");cell.className="cell";
+     list.forEach(x=>{let e=document.createElement("div");e.className="ride";e.innerHTML=`<b>${x.time} – ${x.rider}</b>${x.horse}<br>${x.instructor}<br>${x.type}<br><button onclick="editRide('${x.id}')">Edytuj</button> <button onclick="delRide('${x.id}')">Usuń</button>`;cell.appendChild(e)});
+     c.appendChild(cell);
+   }
+ }
+}
+function openAdd(){form.reset();document.getElementById("id").value="";document.getElementById("dlgTitle").textContent="Dodaj jazdę";document.getElementById("date").value=iso(weekStart);document.getElementById("time").value="07:00";dlg.showModal()}
+function editRide(id){let x=rides.find(r=>r.id===id);if(!x)return;document.getElementById("id").value=x.id;document.getElementById("date").value=x.date;document.getElementById("time").value=x.time;document.getElementById("rider").value=x.rider;document.getElementById("horse").value=x.horse;document.getElementById("instructor").value=x.instructor;document.getElementById("type").value=x.type;document.getElementById("dlgTitle").textContent="Edytuj jazdę";dlg.showModal()}
+form.onsubmit=e=>{e.preventDefault();let id=document.getElementById("id").value||crypto.randomUUID();let x={id,date:date.value,time:time.value,rider:rider.value,horse:horse.value,instructor:instructor.value,type:type.value};let i=rides.findIndex(r=>r.id===id);if(i>=0)rides[i]=x;else rides.push(x);localStorage.setItem("siemowo_rides",JSON.stringify(rides));dlg.close();render()}
+function delRide(id){if(confirm("Usunąć tę jazdę?")){rides=rides.filter(r=>r.id!==id);localStorage.setItem("siemowo_rides",JSON.stringify(rides));render()}}
+function prevWeek(){weekStart.setDate(weekStart.getDate()-7);render()} function nextWeek(){weekStart.setDate(weekStart.getDate()+7);render()} function today(){weekStart=monday(new Date());render()}
+render();
+</script>
+</body></html>
