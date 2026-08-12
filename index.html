@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grafik Stajnia Siemowo</title>
+
+<style>
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  margin:0;
+  background:#f5f5f5;
+  color:#222;
+}
+
+header{
+  background:white;
+  padding:18px 16px;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+h1{
+  margin:0 0 12px;
+  font-size:24px;
+}
+
+.bar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+button{
+  border:0;
+  border-radius:10px;
+  padding:10px 14px;
+  font-size:15px;
+  background:#222;
+  color:white;
+}
+
+button.gray{
+  background:#ddd;
+  color:#222;
+}
+
+.wrap{
+  padding:14px;
+  overflow-x:auto;
+}
+
+.week{
+  display:grid;
+  grid-template-columns:70px repeat(7,minmax(120px,1fr));
+  min-width:950px;
+}
+
+.cell{
+  background:white;
+  border:1px solid #ddd;
+  min-height:80px;
+  padding:8px;
+  box-sizing:border-box;
+}
+
+.head{
+  font-weight:700;
+  text-align:center;
+  background:#eee;
+}
+
+.time{
+  font-weight:600;
+  text-align:center;
+  background:#f0f0f0;
+}
+
+.ride{
+  background:#eaf4e8;
+  border-left:4px solid #5b8c5a;
+  padding:7px;
+  margin-bottom:5px;
+  border-radius:6px;
+}
+
+.ride b{
+  display:block;
+}
+
+.ride button{
+  font-size:12px;
+  padding:5px 8px;
+  margin-top:5px;
+  background:#555;
+}
+
+dialog{
+  border:0;
+  border-radius:16px;
+  padding:20px;
+  width:min(420px,90%);
+  box-shadow:0 10px 40px rgba(0,0,0,.25);
+}
+
+dialog::backdrop{
+  background:rgba(0,0,0,.45);
+}
+
+label{
+  display:block;
+  margin:10px 0 4px;
+  font-weight:600;
+}
+
+input,select{
+  width:100%;
+  padding:10px;
+  box-sizing:border-box;
+  border:1px solid #ccc;
+  border-radius:8px;
+  font-size:16px;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  margin-top:16px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🐴 Grafik Stajnia Siemowo</h1>
+
+<div class="bar">
+<button onclick="prevWeek()">← Poprzedni</button>
+<button class="gray" onclick="today()">Dziś</button>
+<button onclick="nextWeek()">Następny →</button>
+<button onclick="openAdd()">＋ Dodaj jazdę</button>
+</div>
+</header>
+
+<div class="wrap">
+<div id="week" class="week"></div>
+</div>
+
+<dialog id="addDialog">
+<h2>Dodaj jazdę</h2>
+
+<label>Data</label>
+<input id="date" type="date">
+
+<label>Godzina</label>
+<input id="time" type="time">
+
+<label>Jeździec</label>
+<input id="rider" type="text" placeholder="Imię i nazwisko">
+
+<label>Koń</label>
+<input id="horse" type="text" placeholder="Imię konia">
+
+<label>Instruktor</label>
+<input id="instructor" type="text" placeholder="Instruktor">
+
+<div class="actions">
+<button class="gray" onclick="closeAdd()">Anuluj</button>
+<button onclick="addRide()">Zapisz</button>
+</div>
+</dialog>
+
+<script>
+let current = new Date();
+
+let rides = JSON.parse(localStorage.getItem("siemowoRides") || "[]");
+
+function dateKey(d){
+  return d.toISOString().slice(0,10);
+}
+
+function mondayOf(d){
+  let x = new Date(d);
+  let day = x.getDay();
+  let diff = day === 0 ? -6 : 1-day;
+  x.setDate(x.getDate()+diff);
+  x.setHours(0,0,0,0);
+  return x;
+}
+
+function render(){
+  const week = document.getElementById("week");
+  week.innerHTML="";
+
+  const monday = mondayOf(current);
+
+  const empty = document.createElement("div");
+  empty.className="cell head";
+  empty.textContent="Godz.";
+  week.appendChild(empty);
+
+  const names=["Pon","Wt","Śr","Czw","Pt","Sob","Nd"];
+
+  for(let i=0;i<7;i++){
+    let d=new Date(monday);
+    d.setDate(monday.getDate()+i);
+
+    let c=document.createElement("div");
+    c.className="cell head";
+    c.innerHTML=names[i]+"<br>"+d.getDate()+"."+String(d.getMonth()+1).padStart(2,"0");
+    week.appendChild(c);
+  }
+
+  for(let hour=8;hour<=20;hour++){
+    let t=document.createElement("div");
+    t.className="cell time";
+    t.textContent=String(hour).padStart(2,"0")+":00";
+    week.appendChild(t);
+
+    for(let day=0;day<7;day++){
+      let d=new Date(monday);
+      d.setDate(monday.getDate()+day);
+
+      let cell=document.createElement("div");
+      cell.className="cell";
+
+      rides
+        .filter(r=>r.date===dateKey(d) && Number(r.time.split(":")[0])===hour)
+        .forEach(r=>{
+          let ride=document.createElement("div");
+          ride.className="ride";
+
+          ride.innerHTML=
+            "<b>"+r.time+" — "+escapeHtml(r.rider)+"</b>"+
+            "🐴 "+escapeHtml(r.horse)+"<br>"+
+            "Instruktor: "+escapeHtml(r.instructor)+
+            "<br><button onclick=\"removeRide('"+r.id+"')\">Usuń</button>";
+
+          cell.appendChild(ride);
+        });
+
+      week.appendChild(cell);
+    }
+  }
+}
+
+function escapeHtml(text){
+  return String(text || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+function prevWeek(){
+  current.setDate(current.getDate()-7);
+  render();
+}
+
+function nextWeek(){
+  current.setDate(current.getDate()+7);
+  render();
+}
+
+function today(){
+  current=new Date();
+  render();
+}
+
+function openAdd(){
+  document.getElementById("date").value=dateKey(new Date());
+  document.getElementById("time").value="16:00";
+  document.getElementById("rider").value="";
+  document.getElementById("horse").value="";
+  document.getElementById("instructor").value="";
+  document.getElementById("addDialog").showModal();
+}
+
+function closeAdd(){
+  document.getElementById("addDialog").close();
+}
+
+function addRide(){
+  const date=document.getElementById("date").value;
+  const time=document.getElementById("time").value;
+  const rider=document.getElementById("rider").value.trim();
+  const horse=document.getElementById("horse").value.trim();
+  const instructor=document.getElementById("instructor").value.trim();
+
+  if(!date || !time || !rider || !horse){
+    alert("Uzupełnij datę, godzinę, jeźdźca i konia.");
+    return;
+  }
+
+  rides.push({
+    id:Date.now().toString(),
+    date,
+    time,
+    rider,
+    horse,
+    instructor
+  });
+
+  localStorage.setItem("siemowoRides",JSON.stringify(rides));
+
+  closeAdd();
+  render();
+}
+
+function removeRide(id){
+  if(!confirm("Usunąć tę jazdę?")) return;
+
+  rides=rides.filter(r=>r.id!==id);
+  localStorage.setItem("siemowoRides",JSON.stringify(rides));
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
