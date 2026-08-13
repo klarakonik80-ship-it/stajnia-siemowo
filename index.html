@@ -319,7 +319,100 @@ function escapeHtml(text){
 }
 
 render();
-</script>
 
+const konieSiemowo = [
+"Klara","Klara siwa","Leipzig","Gayall","Cartaroni","Gwiazdka",
+"Pretty","Mela","Lord","Tradycja","Hester","Stanislav","Bethoven",
+"Goliat","Whyski","Fiona","Karuś","Filip","Kleo","Figaro","Tasiemka",
+"Misty","Tiranas","Dioser","Equs","Tsunami",
+"Viktor","Kobra","Amos","Zenek","Contici","Wicher","Igor",
+"Lancaster","Ferrari","Gracek","Cono Corse","Sajan"
+];
+
+let jezdzcySiemowo = JSON.parse(
+  localStorage.getItem("jezdzcySiemowo") || "[]"
+);
+
+function zapiszJezdzca(){
+  const pole = document.getElementById("nowyJezdziec");
+  const imie = pole.value.trim();
+
+  if(!imie) return;
+
+  if(!jezdzcySiemowo.includes(imie)){
+    jezdzcySiemowo.push(imie);
+    localStorage.setItem(
+      "jezdzcySiemowo",
+      JSON.stringify(jezdzcySiemowo)
+    );
+  }
+
+  pole.value = "";
+  pokazJezdzcow();
+}
+
+function pokazJezdzcow(){
+
+  let panel = document.getElementById("panelSiemowo");
+
+  if(!panel){
+    panel = document.createElement("div");
+    panel.id = "panelSiemowo";
+
+    panel.style.cssText =
+      "background:white;padding:18px;margin:16px;" +
+      "border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.15);";
+
+    document.body.insertBefore(panel, document.body.firstChild);
+  }
+
+  panel.innerHTML = `
+    <h2>🐴 Konie Stajni Siemowo</h2>
+
+    <select id="wybranyKon" style="
+      width:100%;
+      padding:14px;
+      font-size:17px;
+      border-radius:10px;
+      margin-bottom:14px;
+    ">
+      ${konieSiemowo.map(k => `<option>${k}</option>`).join("")}
+    </select>
+
+    <h2>👤 Jeźdźcy</h2>
+
+    <input
+      id="nowyJezdziec"
+      placeholder="Wpisz imię jeźdźca"
+      style="
+        width:100%;
+        padding:14px;
+        font-size:17px;
+        border-radius:10px;
+        border:1px solid #ccc;
+      "
+    >
+
+    <button onclick="zapiszJezdzca()" style="
+      width:100%;
+      margin-top:10px;
+    ">
+      + Dodaj jeźdźca
+    </button>
+
+    <div style="margin-top:15px">
+      ${
+        jezdzcySiemowo.length
+        ? jezdzcySiemowo.map(j => `<div>👤 ${j}</div>`).join("")
+        : "<div>Nie ma jeszcze zapisanych jeźdźców.</div>"
+      }
+    </div>
+  `;
+}
+
+pokazJezdzcow();
+</script>
 </body>
 </html>
+
+
