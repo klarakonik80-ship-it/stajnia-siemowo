@@ -156,7 +156,10 @@ input{
 <input type="time" id="time" value="16:00">
 
 <label>Jeździec</label>
-<input type="text" id="rider" placeholder="Imię i nazwisko">
+
+<select id="rider" style="width:100%;padding:14px;font-size:17px;border-radius:10px;">
+<option value="">Wybierz jeźdźca</option>
+</select>
 
 <label>Koń</label><select id="horse" style="width:100%;padding:14px;font-size:17px;border-radius:10px;">
 <option value="">Wybierz konia</option>
@@ -288,6 +291,15 @@ function openModal(){
 
   let d=new Date(currentDate);
   document.getElementById("date").value=keyDate(d);
+  const riderSelect=document.getElementById("rider");
+riderSelect.innerHTML='<option value="">Wybierz jeźdźca</option>';
+
+jezdzcySiemowo.forEach(function(imie){
+    const option=document.createElement("option");
+    option.value=imie;
+    option.textContent=imie;
+    riderSelect.appendChild(option);
+});
 }
 
 function closeModal(){
@@ -297,9 +309,9 @@ function closeModal(){
 function saveRide(){
   let date=document.getElementById("date").value;
   let time=document.getElementById("time").value;
-  let rider=document.getElementById("rider").value.trim();
-  let horse=document.getElementById("horse").value.trim();
-  let instructor=document.getElementById("instructor").value.trim();
+  let rider=document.getElementById("rider").value
+  let horse=document.getElementById("horse").value
+  let instructor=document.getElementById("instructor").value
 
   if(!date||!time||!rider||!horse){
     alert("Uzupełnij datę, godzinę, jeźdźca i konia.");
