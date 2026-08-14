@@ -7,118 +7,177 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:#f5f5f5;
-  color:#222;
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+background:#f5f5f5;
+color:#222;
 }
+
 header{
-  background:white;
-  padding:22px 16px;
-  position:sticky;
-  top:0;
-  z-index:10;
-  box-shadow:0 2px 8px #0001;
+background:white;
+padding:20px 16px;
+position:sticky;
+top:0;
+z-index:10;
+box-shadow:0 2px 8px #0002;
 }
-h1{margin:0 0 18px;font-size:28px}
-.bar{display:flex;gap:10px;flex-wrap:wrap}
+
+h1{
+margin:0 0 15px;
+font-size:26px;
+}
+
+.bar{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+}
+
 button{
-  border:0;
-  border-radius:14px;
-  padding:14px 20px;
-  font-size:17px;
-  background:#222;
-  color:white;
+border:0;
+border-radius:12px;
+padding:12px 16px;
+font-size:16px;
+background:#222;
+color:white;
 }
-button:active{opacity:.7}
+
 .calendar{
-  overflow:auto;
-  padding:18px;
+overflow:auto;
+padding:15px;
 }
+
 table{
-  border-collapse:collapse;
-  min-width:900px;
-  width:100%;
-  background:white;
+border-collapse:collapse;
+min-width:900px;
+width:100%;
+background:white;
 }
+
 th,td{
-  border:2px solid #ddd;
-  min-width:180px;
-  height:120px;
-  vertical-align:top;
-  padding:8px;
+border:1px solid #ddd;
+min-width:170px;
+height:100px;
+vertical-align:top;
+padding:7px;
 }
+
 th{
-  height:70px;
-  background:#eee;
-  text-align:center;
-  font-size:17px;
+height:60px;
+background:#eee;
+text-align:center;
 }
+
 .time{
-  min-width:70px;
-  width:70px;
-  font-weight:bold;
-  background:#fafafa;
+min-width:65px;
+width:65px;
+font-weight:bold;
+background:#fafafa;
 }
+
 .ride{
-  background:#eaf4e7;
-  border-left:6px solid #57905a;
-  border-radius:12px;
-  padding:10px;
-  font-size:15px;
+background:#eaf4e7;
+border-left:5px solid #57905a;
+border-radius:10px;
+padding:8px;
+margin-bottom:5px;
+font-size:14px;
 }
-.ride strong{font-size:20px}
+
+.ride strong{
+font-size:18px;
+}
+
 .ride button{
-  padding:7px 12px;
-  font-size:14px;
-  margin-top:8px;
-  background:#555;
+padding:5px 9px;
+font-size:12px;
+margin-top:5px;
+background:#777;
 }
+
 .modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:#0008;
-  z-index:50;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
+display:none;
+position:fixed;
+inset:0;
+background:#0008;
+z-index:50;
+align-items:center;
+justify-content:center;
+padding:15px;
 }
+
 .box{
-  background:white;
-  width:100%;
-  max-width:500px;
-  border-radius:22px;
-  padding:24px;
+background:white;
+width:100%;
+max-width:500px;
+border-radius:20px;
+padding:20px;
+max-height:90vh;
+overflow:auto;
 }
-.box h2{margin-top:0}
+
+.box h2{
+margin-top:0;
+}
+
 label{
-  display:block;
-  font-weight:bold;
-  margin-top:14px;
+display:block;
+font-weight:bold;
+margin-top:12px;
 }
-input{
-  width:100%;
-  padding:14px;
-  margin-top:6px;
-  border:1px solid #ccc;
-  border-radius:12px;
-  font-size:17px;
+
+input,select{
+width:100%;
+padding:13px;
+margin-top:5px;
+border:1px solid #ccc;
+border-radius:10px;
+font-size:16px;
+background:white;
 }
+
 .actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-  margin-top:22px;
+display:flex;
+gap:10px;
+justify-content:flex-end;
+margin-top:20px;
 }
-.cancel{background:#ddd;color:#222}
+
+.cancel{
+background:#ddd;
+color:#222;
+}
+
+.panel{
+background:white;
+margin:15px;
+padding:18px;
+border-radius:16px;
+box-shadow:0 2px 8px #0002;
+}
+
+.riderRow{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:8px 0;
+border-bottom:1px solid #eee;
+}
+
+.deleteRider{
+background:#d33;
+padding:5px 9px;
+font-size:12px;
+}
 </style>
 </head>
 
 <body>
 
 <header>
+
 <h1>🐴 Grafik Stajnia Siemowo</h1>
 
 <div class="bar">
@@ -127,10 +186,15 @@ input{
 <button onclick="nextDay()">Następny →</button>
 <button onclick="openModal()">＋ Dodaj jazdę</button>
 </div>
+
 </header>
 
+<div id="panel"></div>
+
 <div class="calendar">
+
 <table>
+
 <thead>
 <tr>
 <th class="time">Godz.</th>
@@ -141,13 +205,19 @@ input{
 <th id="d4"></th>
 </tr>
 </thead>
+
 <tbody id="calendarBody"></tbody>
+
 </table>
+
 </div>
 
+
 <div class="modal" id="modal">
+
 <div class="box">
-<h2>Dodaj jazdę</h2>
+
+<h2>🐴 Dodaj jazdę</h2>
 
 <label>Data</label>
 <input type="date" id="date">
@@ -157,11 +227,14 @@ input{
 
 <label>Jeździec</label>
 
-<select id="rider" style="width:100%;padding:14px;font-size:17px;border-radius:10px;">
+<select id="rider">
 <option value="">Wybierz jeźdźca</option>
 </select>
 
-<label>Koń</label><select id="horse" style="width:100%;padding:14px;font-size:17px;border-radius:10px;">
+<label>Koń</label>
+
+<select id="horse">
+
 <option value="">Wybierz konia</option>
 <option>Klara</option>
 <option>Klara siwa</option>
@@ -201,269 +274,421 @@ input{
 <option>Gracek</option>
 <option>Cono Corse</option>
 <option>Sajan</option>
+
 </select>
 
 <label>Instruktor</label>
-<input type="text" id="instructor" placeholder="Instruktor">
+
+<input
+id="instructor"
+placeholder="Wpisz instruktora"
+>
 
 <div class="actions">
-<button class="cancel" onclick="closeModal()">Anuluj</button>
-<button onclick="saveRide()">Zapisz</button>
+
+<button class="cancel" onclick="closeModal()">
+Anuluj
+</button>
+
+<button onclick="saveRide()">
+Zapisz
+</button>
+
 </div>
 
 </div>
 </div>
+
 
 <script>
-let currentDate=new Date();
 
-let rides=JSON.parse(localStorage.getItem("siemowoRides")||"[]");
+let currentDate = new Date();
+
+let rides = JSON.parse(
+localStorage.getItem("siemowoRides") || "[]"
+);
+
+let riders = JSON.parse(
+localStorage.getItem("siemowoRiders") || "[]"
+);
+
 
 function keyDate(d){
-  return d.toISOString().split("T")[0];
+
+return d.toISOString().split("T")[0];
+
 }
+
 
 function formatDate(d){
-  return d.toLocaleDateString("pl-PL",{
-    weekday:"short",
-    day:"2-digit",
-    month:"2-digit"
-  });
+
+return d.toLocaleDateString("pl-PL",{
+weekday:"short",
+day:"2-digit",
+month:"2-digit"
+});
+
 }
+
 
 function render(){
-  for(let i=0;i<5;i++){
-    let d=new Date(currentDate);
-    d.setDate(d.getDate()+i);
-    document.getElementById("d"+i).innerHTML=
-      formatDate(d);
-  }
 
-  let body=document.getElementById("calendarBody");
-  body.innerHTML="";
+for(let i=0;i<5;i++){
 
-  for(let hour=8;hour<=20;hour++){
-    let tr=document.createElement("tr");
+let d=new Date(currentDate);
 
-    let time=document.createElement("td");
-    time.className="time";
-    time.textContent=String(hour).padStart(2,"0")+":00";
-    tr.appendChild(time);
+d.setDate(d.getDate()+i);
 
-    for(let day=0;day<5;day++){
-      let td=document.createElement("td");
+document.getElementById("d"+i).textContent=
+formatDate(d);
 
-      let d=new Date(currentDate);
-      d.setDate(d.getDate()+day);
-
-      let date=keyDate(d);
-      let timeValue=String(hour).padStart(2,"0")+":00";
-
-      let found=rides.filter(r=>
-        r.date===date && r.time===timeValue
-      );
-
-      found.forEach(r=>{
-        let div=document.createElement("div");
-        div.className="ride";
-
-        div.innerHTML=`
-        <strong>${r.time}</strong><br>
-        👤 ${escapeHtml(r.rider)}<br>
-        🐴 ${escapeHtml(r.horse)}<br>
-        Instruktor: ${escapeHtml(r.instructor)}
-        <br>
-        <button onclick="removeRide('${r.id}')">Usuń</button>
-        `;
-
-        td.appendChild(div);
-      });
-
-      tr.appendChild(td);
-    }
-
-    body.appendChild(tr);
-  }
 }
+
+
+let body=document.getElementById("calendarBody");
+
+body.innerHTML="";
+
+
+for(let hour=8;hour<=20;hour++){
+
+let tr=document.createElement("tr");
+
+let time=document.createElement("td");
+
+time.className="time";
+
+time.textContent=
+String(hour).padStart(2,"0")+":00";
+
+tr.appendChild(time);
+
+
+for(let day=0;day<5;day++){
+
+let td=document.createElement("td");
+
+let d=new Date(currentDate);
+
+d.setDate(d.getDate()+day);
+
+let date=keyDate(d);
+
+let timeValue=
+String(hour).padStart(2,"0")+":00";
+
+
+let found=rides.filter(r=>
+r.date===date &&
+r.time===timeValue
+);
+
+
+found.forEach(r=>{
+
+let div=document.createElement("div");
+
+div.className="ride";
+
+div.innerHTML=`
+<strong>${r.time}</strong><br>
+👤 ${escapeHtml(r.rider)}<br>
+🐴 ${escapeHtml(r.horse)}<br>
+👨‍🏫 ${escapeHtml(r.instructor || "-")}
+<br>
+<button onclick="removeRide('${r.id}')">
+Usuń
+</button>
+`;
+
+td.appendChild(div);
+
+});
+
+
+tr.appendChild(td);
+
+}
+
+body.appendChild(tr);
+
+}
+
+}
+
 
 function openModal(){
-  document.getElementById("modal").style.display="flex";
 
-  let d=new Date(currentDate);
-  document.getElementById("date").value=keyDate(d);
-  const riderSelect=document.getElementById("rider");
-riderSelect.innerHTML='<option value="">Wybierz jeźdźca</option>';
+document.getElementById("modal").style.display="flex";
 
-jezdzcySiemowo.forEach(function(imie){
-    const option=document.createElement("option");
-    option.value=imie;
-    option.textContent=imie;
-    riderSelect.appendChild(option);
-});
+document.getElementById("date").value=
+keyDate(currentDate);
+
+loadRiders();
+
 }
+
 
 function closeModal(){
-  document.getElementById("modal").style.display="none";
+
+document.getElementById("modal").style.display="none";
+
 }
+
+
+function loadRiders(){
+
+let select=document.getElementById("rider");
+
+select.innerHTML=
+'<option value="">Wybierz jeźdźca</option>';
+
+riders.forEach(name=>{
+
+let option=document.createElement("option");
+
+option.value=name;
+
+option.textContent=name;
+
+select.appendChild(option);
+
+});
+
+}
+
 
 function saveRide(){
-  let date=document.getElementById("date").value;
-  let time=document.getElementById("time").value;
-  let rider=document.getElementById("rider").value
-  let horse=document.getElementById("horse").value
-  let instructor=document.getElementById("instructor").value
 
-  if(!date||!time||!rider||!horse){
-    alert("Uzupełnij datę, godzinę, jeźdźca i konia.");
-    return;
-  }
+let date=
+document.getElementById("date").value;
 
-  rides.push({
-    id:Date.now().toString(),
-    date,
-    time,
-    rider,
-    horse,
-    instructor
-  });
+let time=
+document.getElementById("time").value;
 
-  localStorage.setItem("siemowoRides",JSON.stringify(rides));
+let rider=
+document.getElementById("rider").value;
 
-  document.getElementById("rider").value="";
-  document.getElementById("horse").value="";
-  document.getElementById("instructor").value="";
+let horse=
+document.getElementById("horse").value;
 
-  closeModal();
-  render();
+let instructor=
+document.getElementById("instructor").value;
+
+
+if(!date || !time || !rider || !horse){
+
+alert(
+"Uzupełnij datę, godzinę, jeźdźca i konia."
+);
+
+return;
+
 }
 
-function removeRide(id){
-  if(!confirm("Usunąć tę jazdę?")) return;
 
-  rides=rides.filter(r=>r.id!==id);
-  localStorage.setItem("siemowoRides",JSON.stringify(rides));
-  render();
-}
+rides.push({
 
-function previousDay(){
-  currentDate.setDate(currentDate.getDate()-1);
-  render();
-}
+id:Date.now().toString(),
 
-function nextDay(){
-  currentDate.setDate(currentDate.getDate()+1);
-  render();
-}
+date:date,
 
-function today(){
-  currentDate=new Date();
-  render();
-}
+time:time,
 
-function escapeHtml(text){
-  return text
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
+rider:rider,
+
+horse:horse,
+
+instructor:instructor
+
+});
+
+
+localStorage.setItem(
+"siemowoRides",
+JSON.stringify(rides)
+);
+
+
+document.getElementById("instructor").value="";
+
+document.getElementById("horse").value="";
+
+closeModal();
 
 render();
 
-const konieSiemowo = [
-"Klara","Klara siwa","Leipzig","Gayall","Cartaroni","Gwiazdka",
-"Pretty","Mela","Lord","Tradycja","Hester","Stanislav","Bethoven",
-"Goliat","Whyski","Fiona","Karuś","Filip","Kleo","Figaro","Tasiemka",
-"Misty","Tiranas","Dioser","Equs","Tsunami",
-"Viktor","Kobra","Amos","Zenek","Contici","Wicher","Igor",
-"Lancaster","Ferrari","Gracek","Cono Corse","Sajan"
-];
+}
 
-let jezdzcySiemowo = JSON.parse(
-  localStorage.getItem("jezdzcySiemowo") || "[]"
+
+function removeRide(id){
+
+if(!confirm("Usunąć tę jazdę?")) return;
+
+rides=rides.filter(r=>r.id!==id);
+
+localStorage.setItem(
+"siemowoRides",
+JSON.stringify(rides)
 );
 
-function zapiszJezdzca(){
-  const pole = document.getElementById("nowyJezdziec");
-  const imie = pole.value.trim();
+render();
 
-  if(!imie) return;
-
-  if(!jezdzcySiemowo.includes(imie)){
-    jezdzcySiemowo.push(imie);
-    localStorage.setItem(
-      "jezdzcySiemowo",
-      JSON.stringify(jezdzcySiemowo)
-    );
-  }
-
-  pole.value = "";
-  pokazJezdzcow();
 }
 
-function pokazJezdzcow(){
 
-  let panel = document.getElementById("panelSiemowo");
+function previousDay(){
 
-  if(!panel){
-    panel = document.createElement("div");
-    panel.id = "panelSiemowo";
+currentDate.setDate(
+currentDate.getDate()-1
+);
 
-    panel.style.cssText =
-      "background:white;padding:18px;margin:16px;" +
-      "border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.15);";
+render();
 
-    document.body.insertBefore(panel, document.body.firstChild);
-  }
-
-  panel.innerHTML = `
-    <h2>🐴 Konie Stajni Siemowo</h2>
-
-    <select id="wybranyKon" style="
-      width:100%;
-      padding:14px;
-      font-size:17px;
-      border-radius:10px;
-      margin-bottom:14px;
-    ">
-      ${konieSiemowo.map(k => `<option>${k}</option>`).join("")}
-    </select>
-
-    <h2>👤 Jeźdźcy</h2>
-
-    <input
-      id="nowyJezdziec"
-      placeholder="Wpisz imię jeźdźca"
-      style="
-        width:100%;
-        padding:14px;
-        font-size:17px;
-        border-radius:10px;
-        border:1px solid #ccc;
-      "
-    >
-
-    <button onclick="zapiszJezdzca()" style="
-      width:100%;
-      margin-top:10px;
-    ">
-      + Dodaj jeźdźca
-    </button>
-
-    <div style="margin-top:15px">
-      ${
-        jezdzcySiemowo.length
-        ? jezdzcySiemowo.map(j => `<div>👤 ${j}</div>`).join("")
-        : "<div>Nie ma jeszcze zapisanych jeźdźców.</div>"
-      }
-    </div>
-  `;
 }
 
-pokazJezdzcow();
+
+function nextDay(){
+
+currentDate.setDate(
+currentDate.getDate()+1
+);
+
+render();
+
+}
+
+
+function today(){
+
+currentDate=new Date();
+
+render();
+
+}
+
+
+function addRider(){
+
+let input=
+document.getElementById("newRider");
+
+let name=input.value.trim();
+
+if(!name) return;
+
+if(!riders.includes(name)){
+
+riders.push(name);
+
+localStorage.setItem(
+"siemowoRiders",
+JSON.stringify(riders)
+);
+
+}
+
+input.value="";
+
+showPanel();
+
+loadRiders();
+
+}
+
+
+function deleteRider(name){
+
+if(!confirm("Usunąć jeźdźca "+name+"?"))
+return;
+
+riders=riders.filter(r=>r!==name);
+
+localStorage.setItem(
+"siemowoRiders",
+JSON.stringify(riders)
+);
+
+showPanel();
+
+loadRiders();
+
+}
+
+
+function showPanel(){
+
+let panel=document.getElementById("panel");
+
+panel.innerHTML=`
+
+<div class="panel">
+
+<h2>👤 Jeźdźcy Stajni Siemowo</h2>
+
+<input
+id="newRider"
+placeholder="Wpisz imię i nazwisko jeźdźca"
+>
+
+<button
+onclick="addRider()"
+style="margin-top:10px;width:100%;"
+>
+＋ Dodaj jeźdźca
+</button>
+
+<div style="margin-top:15px;">
+
+${
+riders.length
+?
+riders.map(name=>`
+
+<div class="riderRow">
+
+<span>👤 ${escapeHtml(name)}</span>
+
+<button
+class="deleteRider"
+onclick="deleteRider('${escapeHtml(name)}')"
+>
+Usuń
+</button>
+
+</div>
+
+`).join("")
+:
+"<p>Nie ma jeszcze zapisanych jeźdźców.</p>"
+}
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+function escapeHtml(text){
+
+return String(text)
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+showPanel();
+
+render();
+
 </script>
+
 </body>
 </html>
-
-
