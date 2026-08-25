@@ -66,7 +66,13 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
   <div class="card">
     <h2>🎟️ Karnety</h2>
     <div class="grid3">
-      <div><label>Jeździec</label><select id="passRider"></select></div>
+      <div>
+      <label>🔎 Szybkie wyszukiwanie jeźdźca</label>
+      <input id="passRiderSearch" type="search" placeholder="Wpisz imię, nazwisko lub telefon…" autocomplete="off" oninput="filterPassRiders()" onfocus="filterPassRiders()">
+      <div id="passRiderResults" class="quick-results"></div>
+      <div class="inline-note">Kliknij osobę z wyników.</div>
+    </div>
+    <div><label>Jeździec</label><select id="passRider" onchange="passRiderChanged()"></select></div>
       <div><label>Liczba jazd</label><select id="passTotal" onchange="passTotalChanged()"><option value="4">4 jazdy</option><option value="5">5 jazd</option></select></div>
       <div><label>Cena karnetu (zł)</label><input id="passPrice" type="number" min="0" step="1"></div>
       <div><label>Data rozpoczęcia</label><input id="passStart" type="date"></div>
@@ -93,9 +99,15 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
   <div class="card table-scroll"><table><thead><tr><th>Jeździec</th><th>Postęp</th><th>Cena</th><th>Płatność</th><th>Ważny do</th><th>Status</th><th>Akcje</th></tr></thead><tbody id="passesTable"></tbody></table></div>
 </section>
 
-<section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div><label>Jeźdźcy w grupie — maksymalnie 6</label><div id="groupMembers"></div></div><div class="actions"><button id="groupSaveBtn" class="green" onclick="saveGroup()">＋ Zapisz grupę</button><button id="groupCancelBtn" class="gray" style="display:none" onclick="cancelGroupEdit()">Anuluj edycję</button></div></div><div class="card table-scroll"><table><thead><tr><th>Grupa</th><th>Dzień</th><th>Godzina</th><th>Instruktor</th><th>Jeźdźcy</th><th>Akcje</th></tr></thead><tbody id="groupsTable"></tbody></table></div></section>
+<section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div>
+      <label>🔎 Szybko dodaj jeźdźca do grupy</label>
+      <input id="groupRiderSearch" type="search" placeholder="Wpisz imię, nazwisko lub telefon…" autocomplete="off" oninput="filterGroupRiders()" onfocus="filterGroupRiders()">
+      <div id="groupRiderResults" class="quick-results"></div>
+      <div class="inline-note">Kliknij osobę — zostanie dodana do pierwszego wolnego miejsca.</div>
+      <div style="margin-top:12px"><label>Jeźdźcy w grupie — maksymalnie 6</label><div id="groupMembers"></div></div>
+    </div><div class="actions"><button id="groupSaveBtn" class="green" onclick="saveGroup()">＋ Zapisz grupę</button><button id="groupCancelBtn" class="gray" style="display:none" onclick="cancelGroupEdit()">Anuluj edycję</button></div></div><div class="card table-scroll"><table><thead><tr><th>Grupa</th><th>Dzień</th><th>Godzina</th><th>Instruktor</th><th>Jeźdźcy</th><th>Akcje</th></tr></thead><tbody id="groupsTable"></tbody></table></div></section>
 <section id="konie" class="page"><div class="card"><h2>🐴 Konie</h2><div class="grid2"><div><label>Imię konia</label><input id="horseName"></div><div><label>Typ</label><select id="horseType"><option>Koń szkółkowy</option><option>Koń sportowy</option><option>Koń prywatny</option><option>Koń do hipoterapii</option></select></div></div><div class="actions"><button class="green" onclick="addHorse()">＋ Dodaj konia</button></div></div><div class="card table-scroll"><table><thead><tr><th>Koń</th><th>Typ</th><th>Akcje</th></tr></thead><tbody id="horsesTable"></tbody></table></div></section>
-<section id="instruktorzy" class="page"><div class="card"><h2>🧑‍🏫 Instruktorzy</h2><div class="grid2"><div><label>Imię i nazwisko</label><input id="instructorName"></div><div><label>Specjalizacja</label><select id="instructorType"><option>Jazda rekreacyjna</option><option>Sport</option><option>Lonża</option><option>Hipoterapia</option><option>Wszystkie</option></select></div></div><div class="actions"><button class="green" onclick="addInstructor()">＋ Dodaj instruktora</button></div></div><div class="card table-scroll"><table><thead><tr><th>Instruktor</th><th>Specjalizacja</th><th>Akcje</th></tr></thead><tbody id="instructorsTable"></tbody></table></div></section>
+<section id="instruktorzy" class="page"><div class="card"><h2>🧑‍🏫 Instruktorzy</h2><div class="grid2"><div><label>Imię i nazwisko</label><input id="instructorName"></div><div><label>Specjalizacja</label><select id="instructorType"><option>Jazda rekreacyjna</option><option>Sport</option><option>Lonża</option><option>Hipoterapia</option><option>Wszystkie</option></select></div></div><div class="actions"><button class="green" onclick="addInstructor()">＋ Dodaj instruktora</button></div></div><div class="card table-scroll"><table><thead><tr><th>Instruktor</th><th>Specjalizacja</th><th>Odbyte w tym miesiącu</th><th>Odbyte łącznie</th><th>Akcje</th></tr></thead><tbody id="instructorsTable"></tbody></table></div></section>
 </main>
 
 <div id="rideModal" class="modal"><div class="modal-box">
@@ -131,6 +143,15 @@ const API_URL='https://script.google.com/macros/s/AKfycbw_q5HGfj7p4pRLEmyp2ZkfsP
 let riders=[],horses=[],instructors=[],passes=[],groups=[],rides=[];
 let currentDate=new Date();
 let priceSettings={indywidualna:80,lonza:80,oprowadzanka:60,hipoterapia:80,sport:0,pass4:240,pass5:300};
+const RIDE_STATUS_OVERRIDES_KEY='siemowo_ride_status_overrides_v1';
+function getRideStatusOverrides(){try{return JSON.parse(localStorage.getItem(RIDE_STATUS_OVERRIDES_KEY)||'{}')||{}}catch(e){return {}}}
+function setRideStatusOverride(id,status){let m=getRideStatusOverrides();m[id]=status;localStorage.setItem(RIDE_STATUS_OVERRIDES_KEY,JSON.stringify(m))}
+function removeRideStatusOverride(id){let m=getRideStatusOverrides();delete m[id];localStorage.setItem(RIDE_STATUS_OVERRIDES_KEY,JSON.stringify(m))}
+const PASS_PAYMENT_OVERRIDES_KEY='siemowo_pass_payment_overrides_v1';
+function getPaymentOverrides(){try{return JSON.parse(localStorage.getItem(PASS_PAYMENT_OVERRIDES_KEY)||'{}')||{}}catch(e){return {}}}
+function setPaymentOverride(id,status){let m=getPaymentOverrides();m[id]=status;localStorage.setItem(PASS_PAYMENT_OVERRIDES_KEY,JSON.stringify(m))}
+function removePaymentOverride(id){let m=getPaymentOverrides();delete m[id];localStorage.setItem(PASS_PAYMENT_OVERRIDES_KEY,JSON.stringify(m))}
+
 const OFFLINE_CACHE_KEY='siemowo_offline_cache_v4';
 const OFFLINE_PENDING_KEY='siemowo_offline_pending_v4';
 const $=id=>document.getElementById(id);
@@ -158,7 +179,10 @@ function snapshotData(){return {riders,horses,instructors,passes,groups,rides,se
 function persistLocal(pending=true){try{localStorage.setItem(OFFLINE_CACHE_KEY,JSON.stringify(snapshotData()));if(pending)localStorage.setItem(OFFLINE_PENDING_KEY,'1')}catch(e){console.warn('local cache',e)}}
 function clearPending(){try{localStorage.removeItem(OFFLINE_PENDING_KEY)}catch(e){}}
 function hasPending(){try{return localStorage.getItem(OFFLINE_PENDING_KEY)==='1'}catch(e){return false}}
-function restoreLocal(){try{let d=JSON.parse(localStorage.getItem(OFFLINE_CACHE_KEY)||'null');if(!d)return false;riders=d.riders||[];horses=d.horses||[];instructors=d.instructors||[];passes=(d.passes||[]).map(p=>({...p,total:Number(p.total)||0,used:Number(p.used)||0,price:Number(p.price)||0,paymentStatus:p.paymentStatus||'paid'}));groups=(d.groups||[]).map(g=>({...g,day:Number(g.day),time:normalizeTime(g.time),members:Array.isArray(g.members)?g.members:String(g.members||'').split('|').filter(Boolean)}));rides=(d.rides||[]).map(r=>({...r,date:normalizeDate(r.date),time:normalizeTime(r.time),fixed:String(r.fixed)==='true'||r.fixed===true,price:Number(r.price)||0,status:r.status||'planned'}));if(d.settings&&d.settings.prices)priceSettings={...priceSettings,...d.settings.prices};renderAll();applyPriceInputs();return true}catch(e){console.warn('restore local',e);return false}}
+function restoreLocal(){try{let d=JSON.parse(localStorage.getItem(OFFLINE_CACHE_KEY)||'null');if(!d)return false;riders=d.riders||[];horses=d.horses||[];instructors=d.instructors||[];{
+      const paymentOverrides=getPaymentOverrides();
+      passes=(d.passes||[]).map(p=>({...p,total:Number(p.total)||0,used:Number(p.used)||0,price:Number(p.price)||0,paymentStatus:paymentOverrides[p.id]||p.paymentStatus||'paid'}));
+    }groups=(d.groups||[]).map(g=>({...g,day:Number(g.day),time:normalizeTime(g.time),members:Array.isArray(g.members)?g.members:String(g.members||'').split('|').filter(Boolean)}));rides=(d.rides||[]).map(r=>({...r,date:normalizeDate(r.date),time:normalizeTime(r.time),fixed:String(r.fixed)==='true'||r.fixed===true,price:Number(r.price)||0,status:r.status||'planned'}));if(d.settings&&d.settings.prices)priceSettings={...priceSettings,...d.settings.prices};renderAll();applyPriceInputs();return true}catch(e){console.warn('restore local',e);return false}}
 function updateConnectionStatus(){if(!navigator.onLine){setSync(false,hasPending()?'Brak internetu — zmiany zapisane lokalnie, czekają na synchronizację':'Brak internetu — pracujesz na danych zapisanych lokalnie')}else if(hasPending()){setSync(false,'Internet wrócił — trwa synchronizacja lokalnych zmian…')}}
 function apiGetAll(){return new Promise((resolve,reject)=>{let cb='stajniaCb_'+Date.now()+'_'+Math.random().toString(36).slice(2);let script=document.createElement('script');let timer=setTimeout(()=>{cleanup();reject(new Error('Brak odpowiedzi serwera'));},12000);function cleanup(){clearTimeout(timer);try{delete window[cb]}catch(e){}if(script.parentNode)script.parentNode.removeChild(script)}window[cb]=data=>{cleanup();resolve(data)};script.onerror=()=>{cleanup();reject(new Error('Nie udało się pobrać danych'))};script.src=API_URL+'?action=getAll&callback='+encodeURIComponent(cb)+'&_='+Date.now();document.head.appendChild(script)})}
 async function loadAll(forceServer=false){
@@ -167,7 +191,10 @@ async function loadAll(forceServer=false){
   try{
     busy(true);let res=await apiGetAll();if(!res.success)throw new Error(res.error||'Błąd');let d=normalize(res.data);
     riders=d.riders||[];horses=d.horses||[];instructors=d.instructors||[];
-    passes=(d.passes||[]).map(p=>({...p,total:Number(p.total)||0,used:Number(p.used)||0,price:Number(p.price)||0,paymentStatus:p.paymentStatus||'paid'}));
+    {
+      const paymentOverrides=getPaymentOverrides();
+      passes=(d.passes||[]).map(p=>({...p,total:Number(p.total)||0,used:Number(p.used)||0,price:Number(p.price)||0,paymentStatus:paymentOverrides[p.id]||p.paymentStatus||'paid'}));
+    }
     groups=(d.groups||[]).map(g=>({...g,day:Number(g.day),time:normalizeTime(g.time),members:String(g.members||'').split('|').filter(Boolean)}));
     rides=(d.rides||[]).map(r=>({...r,date:normalizeDate(r.date),time:normalizeTime(r.time),fixed:String(r.fixed)==='true'||r.fixed===true,price:Number(r.price)||0,status:r.status||'planned'}));
     if(d.settings&&d.settings.prices){priceSettings={...priceSettings,...d.settings.prices};saveLocalPrices()}
@@ -191,36 +218,161 @@ function fillTimes(){['rideTime','groupTime'].forEach(id=>{let s=$(id);s.innerHT
 function currentGroupMemberValues(){return[...document.querySelectorAll('#groupMembers select')].map(s=>s.value)}
 function createMemberSelectors(selected=[]){let box=$('groupMembers');box.innerHTML='';for(let i=0;i<6;i++){let s=document.createElement('select');s.innerHTML='<option value="">— wolne miejsce —</option>';riders.forEach(r=>s.add(new Option(r.name,r.id)));s.value=selected[i]||'';let d=document.createElement('div');d.className='group-member';d.appendChild(s);box.appendChild(d)}}
 function fillSelect(id,arr,placeholder,filter=''){let s=$(id),old=s.value,q=String(filter||'').trim().toLocaleLowerCase('pl-PL');s.innerHTML='<option value="">'+placeholder+'</option>';arr.filter(x=>!q||String(x.name||'').toLocaleLowerCase('pl-PL').includes(q)).forEach(x=>s.add(new Option(x.name,x.id)));if([...s.options].some(o=>o.value===old))s.value=old}
-function refreshSelects(){let memberValues=currentGroupMemberValues();fillSelect('passRider',riders,'Wybierz jeźdźca');fillSelect('groupInstructor',instructors,'Wybierz instruktora');let rg=$('rideGroup'),old=rg.value;rg.innerHTML='<option value="">Bez grupy</option>';groups.forEach(g=>rg.add(new Option(g.name,g.id)));rg.value=old;createMemberSelectors(memberValues)}
+function refreshSelects(){
+  let memberValues=currentGroupMemberValues();
+  let oldPass=$('passRider')?$('passRider').value:'';
+  fillSelect('passRider',riders,'Wybierz jeźdźca');
+  if(oldPass && [...$('passRider').options].some(o=>o.value===oldPass))$('passRider').value=oldPass;
+  fillSelect('groupInstructor',instructors,'Wybierz instruktora');
+  let rg=$('rideGroup'),old=rg.value;rg.innerHTML='<option value="">Bez grupy</option>';groups.forEach(g=>rg.add(new Option(g.name,g.id)));rg.value=old;
+  createMemberSelectors(memberValues);
+}
 function renderAll(){renderRiders();renderHorses();renderInstructors();renderPasses();renderGroups();refreshSelects();renderSchedule()}
 
 function riderSearchText(r){return `${r.name||''} ${r.phone||''} ${r.level||''}`.toLocaleLowerCase('pl-PL')}
+function filterPassRiders(){
+  let input=$('passRiderSearch'), box=$('passRiderResults'), sel=$('passRider');
+  if(!input||!box||!sel)return;
+  let q=input.value.trim().toLocaleLowerCase('pl-PL');
+  let matches=riders.filter(r=>!q||riderSearchText(r).includes(q));
+  let old=sel.value;
+  sel.innerHTML='<option value="">Wybierz jeźdźca</option>';
+  matches.forEach(r=>sel.add(new Option(`${r.name}${r.phone?' • '+r.phone:''}`,r.id)));
+  if([...sel.options].some(o=>o.value===old))sel.value=old;
+  box.innerHTML='';
+  if(!q){box.style.display='none';return}
+  box.style.display='block';
+  if(!matches.length){box.innerHTML='<div class="quick-empty">Brak pasującego jeźdźca.</div>';return}
+  matches.slice(0,12).forEach(r=>{
+    let b=document.createElement('button'); b.type='button'; b.className='quick-result';
+    b.innerHTML=`<b>${esc(r.name||'')}</b>${r.phone?`<br><span class="muted">${esc(r.phone)}</span>`:''}`;
+    b.onclick=()=>selectPassRider(r.id); box.appendChild(b);
+  });
+}
+function selectPassRider(id){
+  let r=riders.find(x=>x.id===id); if(!r)return;
+  let sel=$('passRider');
+  if(![...sel.options].some(o=>o.value===id))sel.add(new Option(`${r.name}${r.phone?' • '+r.phone:''}`,r.id));
+  sel.value=id;
+  $('passRiderSearch').value=r.name||'';
+  $('passRiderResults').style.display='none';
+  passRiderChanged();
+}
+function passRiderChanged(){
+  let id=$('passRider')?.value||'';
+  if(!id)return;
+  let r=riders.find(x=>x.id===id);
+  if(r && $('passRiderSearch')) $('passRiderSearch').value=r.name||'';
+}
+
+function filterGroupRiders(){
+  let input=$('groupRiderSearch'), box=$('groupRiderResults');
+  if(!input||!box)return;
+  let q=input.value.trim().toLocaleLowerCase('pl-PL');
+  let selected=new Set(currentGroupMemberValues().filter(Boolean));
+  let matches=riders.filter(r=>(!q||riderSearchText(r).includes(q))&&!selected.has(r.id));
+  box.innerHTML='';
+  if(!q){box.style.display='none';return}
+  box.style.display='block';
+  if(!matches.length){box.innerHTML='<div class="quick-empty">Brak pasującego jeźdźca albo osoba jest już w grupie.</div>';return}
+  matches.slice(0,12).forEach(r=>{
+    let b=document.createElement('button'); b.type='button'; b.className='quick-result';
+    b.innerHTML=`<b>${esc(r.name||'')}</b>${r.phone?`<br><span class="muted">${esc(r.phone)}</span>`:''}`;
+    b.onclick=()=>addGroupRiderQuick(r.id); box.appendChild(b);
+  });
+}
+function addGroupRiderQuick(id){
+  let selects=[...document.querySelectorAll('#groupMembers select')];
+  if(selects.some(s=>s.value===id)){alert('Ten jeździec jest już w grupie.');return}
+  let free=selects.find(s=>!s.value);
+  if(!free){alert('W grupie jest już 6 osób.');return}
+  free.value=id;
+  if($('groupRiderSearch'))$('groupRiderSearch').value='';
+  if($('groupRiderResults'))$('groupRiderResults').style.display='none';
+}
+
 function renderRiders(){let q=($('riderSearch')?.value||'').trim().toLocaleLowerCase('pl-PL');let filtered=q?riders.filter(r=>riderSearchText(r).includes(q)):riders;let summary=$('riderSearchSummary');if(summary)summary.textContent=q?`Znaleziono: ${filtered.length} z ${riders.length}`:`Liczba jeźdźców: ${riders.length}`;$('ridersTable').innerHTML=filtered.length?filtered.map(r=>`<tr><td>👤 ${esc(r.name)}</td><td>${esc(r.phone)}</td><td>${esc(r.level)}</td><td><div class="actions"><button class="blue" onclick="openRiderCard('${r.id}')">Karta</button><button class="gray" onclick="editRider('${r.id}')">Edytuj</button><button class="red" onclick="deleteRider('${r.id}')">Usuń</button></div></td></tr>`).join(''):`<tr><td colspan="4" class="empty">${q?'Brak jeźdźców pasujących do wyszukiwania.':'Brak jeźdźców.'}</td></tr>`}
 async function addRider(){let name=$('riderName').value.trim();if(!name)return alert('Wpisz imię i nazwisko.');let editId=$('riderEditId').value;if(editId){let r=riders.find(x=>x.id===editId);if(r){r.name=name;r.phone=$('riderPhone').value.trim();r.level=$('riderLevel').value}}else{riders.push({id:uid(),name,phone:$('riderPhone').value.trim(),level:$('riderLevel').value})}cancelRiderEdit();renderAll();await saveAll()}
 function editRider(id){let r=riders.find(x=>x.id===id);if(!r)return;$('riderEditId').value=id;$('riderName').value=r.name||'';$('riderPhone').value=r.phone||'';$('riderLevel').value=r.level||'Początkujący';$('riderSaveBtn').textContent='💾 Zapisz zmiany';$('riderCancelBtn').style.display='inline-block';showPage('jezdzcy');window.scrollTo({top:0,behavior:'smooth'})}
 function cancelRiderEdit(){$('riderEditId').value='';$('riderName').value='';$('riderPhone').value='';$('riderLevel').value='Początkujący';$('riderSaveBtn').textContent='＋ Dodaj jeźdźca';$('riderCancelBtn').style.display='none'}
-function openRiderCard(id){let r=riders.find(x=>x.id===id);if(!r)return;let rr=rides.filter(x=>x.rider===id);let pp=passes.filter(x=>x.rider===id);$('riderCardTitle').textContent='👤 '+(r.name||'Jeździec');$('riderCardBody').innerHTML=`<div class="card"><b>Telefon:</b> ${esc(r.phone||'—')}<br><b>Poziom:</b> ${esc(r.level||'—')}</div><div class="card"><h3>🎟️ Karnety</h3>${pp.length?pp.map(p=>`<div>${esc(p.total)} jazd • wykorzystane ${esc(p.used||0)} • ${esc(p.price||0)} zł • ważny do ${esc(p.end||'—')}</div>`).join(''):'<div class="muted">Brak karnetów.</div>'}</div><div class="card"><h3>🏇 Historia jazd</h3>${rr.length?rr.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(x=>`<div>${esc(x.date||'')} ${esc(x.time||'')} • ${esc(rideLabel(x.type))} • ${esc(x.price||0)} zł</div>`).join(''):'<div class="muted">Brak zapisanych jazd.</div>'}</div>`;$('riderCardModal').classList.add('show')}
+function openRiderCard(id){
+  let r=riders.find(x=>x.id===id);if(!r)return;
+  let rr=rides.filter(x=>x.rider===id);
+  let pp=passes.filter(x=>x.rider===id);
+  let today=fmt(new Date());
+  let completed=rr.filter(x=>(x.status||'planned')==='completed').length;
+  let noshow=rr.filter(x=>(x.status||'planned')==='noshow').length;
+  let rescheduled=rr.filter(x=>(x.status||'planned')==='rescheduled').length;
+  let active=pp.filter(p=>Number(p.used)<Number(p.total)&&(!p.start||p.start<=today)&&(!p.end||p.end>=today));
+  $('riderCardTitle').textContent='👤 '+(r.name||'Jeździec');
+  $('riderCardBody').innerHTML=`
+    <div class="card">
+      <b>Telefon:</b> ${esc(r.phone||'—')}<br>
+      <b>Poziom:</b> ${esc(r.level||'—')}
+    </div>
+    <div class="card">
+      <h3>📊 Podsumowanie jazd</h3>
+      <div><b>Wszystkie zapisane jazdy:</b> ${rr.length}</div>
+      <div><b>Odbyte:</b> ${completed}</div>
+      <div><b>Przełożone:</b> ${rescheduled}</div>
+      <div><b>Nieobecności bez odwołania:</b> ${noshow}</div>
+    </div>
+    <div class="card">
+      <h3>🎟️ Karnet</h3>
+      <div><b>Czy ma aktywny karnet:</b> ${active.length?'<span class="badge green">TAK</span>':'<span class="badge red">NIE</span>'}</div>
+      <div style="margin-top:8px"><b>Liczba aktywnych karnetów:</b> ${active.length}</div>
+      ${pp.length?pp.map(p=>`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee">
+        ${esc(p.total)} jazd • wykorzystane ${esc(p.used||0)} • ${esc(p.price||0)} zł • ${paymentLabel(p)} • ważny do ${esc(normalizeDate(p.end)||'—')}
+      </div>`).join(''):'<div class="muted" style="margin-top:8px">Brak karnetów.</div>'}
+    </div>
+    <div class="card">
+      <h3>🏇 Historia jazd</h3>
+      ${rr.length?rr.slice().sort((a,b)=>String((b.date||'')+(b.time||'')).localeCompare(String((a.date||'')+(a.time||'')))).map(x=>`<div style="margin-bottom:6px">
+        ${esc(normalizeDate(x.date)||'')} ${esc(normalizeTime(x.time)||'')} • ${esc(rideLabel(x.type))} • ${rideStatusBadge(x)} • ${esc(x.price||0)} zł
+      </div>`).join(''):'<div class="muted">Brak zapisanych jazd.</div>'}
+    </div>`;
+  $('riderCardModal').classList.add('show')
+}
 function closeRiderCard(){$('riderCardModal').classList.remove('show')}
 async function deleteRider(id){if(!confirm('Usunąć jeźdźca?'))return;riders=riders.filter(x=>x.id!==id);renderAll();await saveAll()}
 
 function renderHorses(){$('horsesTable').innerHTML=horses.length?horses.map(h=>`<tr><td>🐴 ${esc(h.name)}</td><td>${esc(h.type)}</td><td><button class="red" onclick="deleteHorse('${h.id}')">Usuń</button></td></tr>`).join(''):'<tr><td colspan="3" class="empty">Brak koni.</td></tr>'}
 async function addHorse(){let name=$('horseName').value.trim();if(!name)return alert('Wpisz imię konia.');horses.push({id:uid(),name,type:$('horseType').value});$('horseName').value='';renderAll();await saveAll()}
 async function deleteHorse(id){if(!confirm('Usunąć konia?'))return;horses=horses.filter(x=>x.id!==id);renderAll();await saveAll()}
-function renderInstructors(){$('instructorsTable').innerHTML=instructors.length?instructors.map(i=>`<tr><td>🧑‍🏫 ${esc(i.name)}</td><td>${esc(i.type)}</td><td><button class="red" onclick="deleteInstructor('${i.id}')">Usuń</button></td></tr>`).join(''):'<tr><td colspan="3" class="empty">Brak instruktorów.</td></tr>'}
+function renderInstructors(){
+  let month=fmt(new Date()).slice(0,7);
+  $('instructorsTable').innerHTML=instructors.length?instructors.map(i=>{
+    let done=rides.filter(r=>r.instructor===i.id&&(r.status||'planned')==='completed');
+    let monthDone=done.filter(r=>normalizeDate(r.date).slice(0,7)===month).length;
+    return `<tr>
+      <td>🧑‍🏫 ${esc(i.name)}</td>
+      <td>${esc(i.type)}</td>
+      <td><b>${monthDone}</b></td>
+      <td><b>${done.length}</b></td>
+      <td><button class="red" onclick="deleteInstructor('${i.id}')">Usuń</button></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="5" class="empty">Brak instruktorów.</td></tr>'
+}
 async function addInstructor(){let name=$('instructorName').value.trim();if(!name)return alert('Wpisz imię instruktora.');instructors.push({id:uid(),name,type:$('instructorType').value});$('instructorName').value='';renderAll();await saveAll()}
 async function deleteInstructor(id){if(!confirm('Usunąć instruktora?'))return;instructors=instructors.filter(x=>x.id!==id);renderAll();await saveAll()}
 
 function paymentLabel(p){return (p.paymentStatus||'paid')==='paid'?'<span class="badge green">Zapłacony</span>':'<span class="badge orange">Do zapłaty</span>'}
-function renderPasses(){$('passesTable').innerHTML=passes.length?passes.map(p=>{let r=riders.find(x=>x.id===p.rider),expired=p.end&&p.end<fmt(new Date()),done=Number(p.used)>=Number(p.total);return `<tr><td>${esc(r?r.name:p.rider)}</td><td>${p.used||0} / ${p.total}</td><td>${Number(p.price||0)} zł</td><td>${paymentLabel(p)}<div class="actions"><button class="gray" onclick="togglePassPayment('${p.id}')">${(p.paymentStatus||'paid')==='paid'?'Oznacz: do zapłaty':'Oznacz: zapłacony'}</button></div></td><td>${esc(p.end)}</td><td>${expired?'<span class="badge red">Wygasł</span>':done?'<span class="badge red">Wykorzystany</span>':'<span class="badge green">Aktywny</span>'}</td><td><button class="red" onclick="deletePass('${p.id}')">Usuń</button></td></tr>`}).join(''):'<tr><td colspan="7" class="empty">Brak karnetów.</td></tr>'}
-async function togglePassPayment(id){let p=passes.find(x=>x.id===id);if(!p)return;p.paymentStatus=(p.paymentStatus||'paid')==='paid'?'unpaid':'paid';renderAll();await saveAll()}
-async function addPass(){let rider=$('passRider').value,total=Number($('passTotal').value),start=$('passStart').value,end=$('passEnd').value,price=Number($('passPrice').value||0),paymentStatus=$('passPayment').value||'paid';if(!rider||!start||!end)return alert('Uzupełnij jeźdźca i daty.');let p={id:uid(),rider,total,used:0,start,end,price,paymentStatus};if($('passIncludePrevious').checked){let candidates=rides.filter(r=>r.rider===rider&&!r.passId&&normalizeDate(r.date)>=start&&normalizeDate(r.date)<=fmt(new Date())&&(r.status||'planned')!=='rescheduled').sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time))).slice(0,total);candidates.forEach(r=>{r.passId=p.id;r.price=0;p.used++})}passes.push(p);$('passIncludePrevious').checked=false;renderAll();await saveAll();alert('Karnet dodany'+(p.used?` i zaliczono ${p.used} wcześniejszych jazd.`:'.'))}
-async function deletePass(id){if(!confirm('Usunąć karnet? Jazdy przypisane do tego karnetu wrócą do rozliczenia bez karnetu.'))return;rides.filter(r=>r.passId===id).forEach(r=>r.passId='');passes=passes.filter(x=>x.id!==id);renderAll();await saveAll()}
+function renderPasses(){$('passesTable').innerHTML=passes.length?passes.map(p=>{let r=riders.find(x=>x.id===p.rider),expired=p.end&&p.end<fmt(new Date()),done=Number(p.used)>=Number(p.total);return `<tr><td>${esc(r?r.name:p.rider)}</td><td>${p.used||0} / ${p.total}</td><td>${Number(p.price||0)} zł</td><td>${paymentLabel(p)}<div class="actions"><button class="gray" onclick="togglePassPayment('${p.id}')">${(p.paymentStatus||'paid')==='paid'?'Oznacz: do zapłaty':'Oznacz: zapłacony'}</button></div></td><td>${esc(normalizeDate(p.end))}</td><td>${expired?'<span class="badge red">Wygasł</span>':done?'<span class="badge red">Wykorzystany</span>':'<span class="badge green">Aktywny</span>'}</td><td><button class="red" onclick="deletePass('${p.id}')">Usuń</button></td></tr>`}).join(''):'<tr><td colspan="7" class="empty">Brak karnetów.</td></tr>'}
+async function togglePassPayment(id){
+  let p=passes.find(x=>x.id===id);if(!p)return;
+  p.paymentStatus=(p.paymentStatus||'paid')==='paid'?'unpaid':'paid';
+  setPaymentOverride(id,p.paymentStatus);
+  renderAll();
+  await saveAll();
+}
+async function addPass(){let rider=$('passRider').value,total=Number($('passTotal').value),start=$('passStart').value,end=$('passEnd').value,price=Number($('passPrice').value||0),paymentStatus=$('passPayment').value||'paid';if(!rider||!start||!end)return alert('Uzupełnij jeźdźca i daty.');let p={id:uid(),rider,total,used:0,start,end,price,paymentStatus};if($('passIncludePrevious').checked){let candidates=rides.filter(r=>r.rider===rider&&!r.passId&&normalizeDate(r.date)>=start&&normalizeDate(r.date)<=fmt(new Date())&&(r.status||'planned')!=='rescheduled').sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time))).slice(0,total);candidates.forEach(r=>{r.passId=p.id;r.price=0;p.used++})}passes.push(p);setPaymentOverride(p.id,p.paymentStatus);$('passIncludePrevious').checked=false;renderAll();await saveAll();alert('Karnet dodany'+(p.used?` i zaliczono ${p.used} wcześniejszych jazd.`:'.'))}
+async function deletePass(id){if(!confirm('Usunąć karnet? Jazdy przypisane do tego karnetu wrócą do rozliczenia bez karnetu.'))return;rides.filter(r=>r.passId===id).forEach(r=>r.passId='');passes=passes.filter(x=>x.id!==id);removePaymentOverride(id);renderAll();await saveAll()}
 function activePasses(rider,date=fmt(new Date())){return passes.filter(p=>p.rider===rider&&Number(p.used)<Number(p.total)&&(!p.start||p.start<=date)&&(!p.end||p.end>=date))}
 
 function renderGroups(){let days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];$('groupsTable').innerHTML=groups.length?groups.map(g=>{let ins=instructors.find(i=>i.id===g.instructor),names=(g.members||[]).map(id=>(riders.find(r=>r.id===id)||{}).name).filter(Boolean).join(', ');return`<tr><td><b>${esc(g.name)}</b></td><td>${days[g.day]}</td><td>${esc(normalizeTime(g.time))}</td><td>${esc(ins?ins.name:'')}</td><td>${esc(names)}</td><td><div class="actions"><button class="green" onclick="openGroupSchedule('${g.id}')">📅 Dodaj do grafiku</button><button class="gray" onclick="editGroup('${g.id}')">Edytuj</button><button class="red" onclick="deleteGroup('${g.id}')">Usuń</button></div></td></tr>`}).join(''):'<tr><td colspan="6" class="empty">Brak grup.</td></tr>'}
 async function saveGroup(){let name=$('groupName').value.trim();if(!name)return alert('Wpisz nazwę grupy.');let members=[...new Set(currentGroupMemberValues().filter(Boolean))];let data={name,day:Number($('groupDay').value),time:normalizeTime($('groupTime').value),instructor:$('groupInstructor').value,members};let editId=$('groupEditId').value;if(editId){let g=groups.find(x=>x.id===editId);if(g)Object.assign(g,data)}else groups.push({id:uid(),...data});cancelGroupEdit();renderAll();await saveAll()}
 function editGroup(id){let g=groups.find(x=>x.id===id);if(!g)return;$('groupEditId').value=id;$('groupName').value=g.name||'';$('groupDay').value=String(Number(g.day));$('groupTime').value=normalizeTime(g.time);$('groupInstructor').value=g.instructor||'';createMemberSelectors(g.members||[]);$('groupSaveBtn').textContent='💾 Zapisz zmiany';$('groupCancelBtn').style.display='inline-block';showPage('grupy');window.scrollTo({top:0,behavior:'smooth'})}
-function cancelGroupEdit(){$('groupEditId').value='';$('groupName').value='';$('groupDay').value='1';$('groupTime').value='07:00';$('groupInstructor').value='';createMemberSelectors([]);$('groupSaveBtn').textContent='＋ Zapisz grupę';$('groupCancelBtn').style.display='none'}
+function cancelGroupEdit(){if($('groupRiderSearch'))$('groupRiderSearch').value='';if($('groupRiderResults'))$('groupRiderResults').style.display='none';$('groupEditId').value='';$('groupName').value='';$('groupDay').value='1';$('groupTime').value='07:00';$('groupInstructor').value='';createMemberSelectors([]);$('groupSaveBtn').textContent='＋ Zapisz grupę';$('groupCancelBtn').style.display='none'}
 async function deleteGroup(id){if(!confirm('Usunąć grupę?'))return;groups=groups.filter(x=>x.id!==id);renderAll();await saveAll()}
 function nextDateForWeekday(day){let d=new Date();d.setHours(12,0,0,0);let diff=(Number(day)-d.getDay()+7)%7;return fmt(addDays(d,diff))}
 function openGroupSchedule(id){let g=groups.find(x=>x.id===id);if(!g)return;if(!(g.members||[]).length)return alert('Ta grupa nie ma jeszcze jeźdźców.');$('groupScheduleId').value=id;$('groupScheduleTitle').textContent='📅 '+(g.name||'Grupa')+' — dodaj do grafiku';$('groupScheduleDate').value=nextDateForWeekday(g.day);$('groupScheduleTime').value=normalizeTime(g.time);let ins=$('groupScheduleInstructor');ins.innerHTML='<option value="">Wybierz instruktora</option>';instructors.forEach(i=>ins.add(new Option(i.name,i.id)));ins.value=g.instructor||'';$('groupScheduleFixed').value='true';let box=$('groupScheduleMembers');box.innerHTML='';(g.members||[]).forEach(riderId=>{let r=riders.find(x=>x.id===riderId);if(!r)return;let row=document.createElement('div');row.className='group-schedule-row';row.innerHTML=`<input class="group-going" type="checkbox" checked data-rider="${esc(r.id)}"><div class="rider-name">${esc(r.name)}</div><select class="group-horse" data-rider="${esc(r.id)}"><option value="">— wybierz konia —</option>${horses.map(h=>`<option value="${esc(h.id)}">${esc(h.name)}</option>`).join('')}</select>`;box.appendChild(row)});$('groupScheduleModal').classList.add('show')}
