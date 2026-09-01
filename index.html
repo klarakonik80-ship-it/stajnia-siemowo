@@ -142,7 +142,15 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
   </details>
 </section>
 
-<section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div>
+<section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2>
+<div class="actions" style="margin:0 0 14px">
+<button class="blue" onclick="setGroupDayFilter(1)">Poniedziałek</button>
+<button class="blue" onclick="setGroupDayFilter(2)">Wtorek</button>
+<button class="blue" onclick="setGroupDayFilter(3)">Środa</button>
+<button class="blue" onclick="setGroupDayFilter(4)">Czwartek</button>
+<button class="blue" onclick="setGroupDayFilter(5)">Piątek</button>
+<button class="gray" onclick="setGroupDayFilter('all')">Wszystkie</button>
+</div><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div>
       <label>🔎 Szybko dodaj jeźdźca do grupy</label>
       <input id="groupRiderSearch" type="search" placeholder="Wpisz imię, nazwisko lub telefon…" autocomplete="off" oninput="filterGroupRiders()" onfocus="filterGroupRiders()">
       <div id="groupRiderResults" class="quick-results"></div>
@@ -194,6 +202,7 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbw_q5HGfj7p4pRLEmyp2ZkfsP0w3d_-soDVkP4yrUYfQGbmksstTUT1M3jmOFdnCfxU/exec';
 let riders=[],horses=[],instructors=[],passes=[],groups=[],rides=[];
+let groupDayFilter='all';
 let currentDate=new Date();
 let priceSettings={indywidualna:80,lonza:80,oprowadzanka:60,hipoterapia:80,sport:0,pass4:240,pass5:300};
 const RIDE_STATUS_OVERRIDES_KEY='siemowo_ride_status_overrides_v1';
@@ -217,7 +226,7 @@ function dayName(d){return['ndz.','pon.','wt.','śr.','czw.','pt.','sob.'][d.get
 function niceDate(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')}
 function normalizeTime(v){let s=String(v??'');let m=s.match(/(?:T|\s)(\d{2}):(\d{2})/);if(m)return m[1]+':'+m[2];m=s.match(/^(\d{1,2}):(\d{2})/);if(m)return String(m[1]).padStart(2,'0')+':'+m[2];return s}
 function normalizeDate(v){let s=String(v??'');let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];let d=new Date(v);if(!isNaN(d))return fmt(d);return s}
-function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');if(id==='grupy'&&groupDayFilter==='all'){let d=new Date().getDay();if(d>=1&&d<=5)groupDayFilter=d;renderGroups()}if(id==='start'&&typeof renderStart==='function')renderStart()}
 function setSync(ok,text){$('syncDot').className='dot '+(ok?'ok':'bad');$('syncText').textContent=text}
 function busy(v){$('loading').style.display=v?'block':'none'}
 function normalize(o){return o&&typeof o==='object'?o:{}}
@@ -488,12 +497,14 @@ async function saveGroupAttendance(){
   persistLocal(true);renderAll();await saveAll();closeGroupAttendance();alert('Lista obecności zapisana.');
 }
 
+function setGroupDayFilter(day){groupDayFilter=day;renderGroups()}
 function renderGroups(){
   let days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
   let sortedGroups=groups.slice().sort((a,b)=>{let da=Number(a.day),db=Number(b.day);let oa=da===0?7:da,ob=db===0?7:db;if(oa!==ob)return oa-ob;return normalizeTime(a.time).localeCompare(normalizeTime(b.time))});
+  let visible=groupDayFilter==='all'?sortedGroups:sortedGroups.filter(g=>Number(g.day)===Number(groupDayFilter));
   let box=$('groupsTable');
-  if(!sortedGroups.length){box.innerHTML='<div class="empty">Brak grup.</div>';return}
-  let byDay={};sortedGroups.forEach(g=>{let d=Number(g.day);(byDay[d]||(byDay[d]=[])).push(g)});
+  if(!visible.length){box.innerHTML='<div class="empty">Brak grup w wybranym dniu.</div>';return}
+  let byDay={};visible.forEach(g=>{let d=Number(g.day);(byDay[d]||(byDay[d]=[])).push(g)});
   let order=[1,2,3,4,5,6,0];
   box.innerHTML=order.filter(d=>byDay[d]?.length).map(d=>`<div class="group-day-section"><div class="group-day-title">📅 ${days[d]}</div>${byDay[d].map(g=>{
     let ins=instructors.find(i=>i.id===g.instructor);
@@ -561,12 +572,25 @@ function openRideModal(){$('rideDate').value=fmt(currentDate);$('rideRiderSearch
 function closeRideModal(){$('rideModal').classList.remove('show');if($('rideRiderResults'))$('rideRiderResults').style.display='none'}
 async function saveRide(){let type=$('rideType').value,date=$('rideDate').value,time=$('rideTime').value,rider=$('rideRider').value,horse=$('rideHorse').value,instructor=$('rideInstructor').value,group=$('rideGroup').value,fixed=$('rideFixed').value==='true';if(!date||!time||!rider||!horse||!instructor)return alert('Uzupełnij datę, godzinę, jeźdźca, konia i instruktora.');if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.horse===horse&&(r.status||'planned')!=='rescheduled')){let h=horses.find(x=>x.id===horse);return alert('Koń '+(h?h.name:'')+' jest już zajęty o tej godzinie.')}if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.rider===rider&&(r.status||'planned')!=='rescheduled'))return alert('Ten jeździec ma już jazdę o tej godzinie.');let choice=$('ridePass').value,passId='',price=Number($('rideCustomPrice').value||0);if(choice==='__new4'||choice==='__new5'){let total=choice==='__new4'?4:5;let p={id:uid(),rider,total,used:0,start:date,end:$('rideNewPassEnd').value||lastDayOfMonth(date),price:Number($('rideNewPassPrice').value||0),paymentStatus:$('rideNewPassPayment').value||'unpaid'};passes.push(p);passId=p.id;p.used=1;price=0}else if(choice){let p=passes.find(x=>x.id===choice);if(!p)return alert('Wybrany karnet nie istnieje.');if(Number(p.used)>=Number(p.total))return alert('Ten karnet jest już wykorzystany.');p.used=Number(p.used||0)+1;passId=p.id;price=0}rides.push({id:uid(),date,time,type,rider,horse,instructor,group,fixed,price,passId,status:'planned'});closeRideModal();renderAll();await saveAll()}
 function rescheduleMonthKey(r){return normalizeDate(r.date).slice(0,7)}
+async function resetRideStatus(id){
+  let r=rides.find(x=>x.id===id);if(!r)return;
+  if(r.status==='rescheduled'&&r.passId){
+    let p=passes.find(x=>x.id===r.passId);
+    if(p&&Number(p.used)<Number(p.total))p.used=Number(p.used||0)+1;
+  }
+  r.status='planned';
+  r.rescheduleMonth='';
+  setRideStatusOverride(id,'planned');
+  persistLocal(true);
+  renderAll();
+  await saveAll();
+}
 async function markRideCompleted(id){let r=rides.find(x=>x.id===id);if(!r)return;r.status='completed';setRideStatusOverride(id,'completed');persistLocal(true);renderAll();await saveAll()}
 async function markRideNoShow(id){let r=rides.find(x=>x.id===id);if(!r)return;if(!confirm('Oznaczyć jako nieobecność bez odwołania? Jeśli jazda jest z karnetu, pozostanie wykorzystana.'))return;r.status='noshow';setRideStatusOverride(id,'noshow');persistLocal(true);renderAll();await saveAll()}
 async function rescheduleRide(id){let r=rides.find(x=>x.id===id);if(!r)return;let month=rescheduleMonthKey(r);if(r.passId){let already=rides.some(x=>x.id!==id&&x.rider===r.rider&&x.status==='rescheduled'&&x.rescheduleMonth===month);if(already)return alert('Ten jeździec wykorzystał już jedno przełożenie z karnetu w tym miesiącu.');let p=passes.find(x=>x.id===r.passId);if(p&&Number(p.used)>0)p.used=Number(p.used)-1}if(!confirm('Oznaczyć jazdę jako przełożoną? Termin przestanie zużywać jazdę z karnetu. Nowy termin dodasz jako nową jazdę.'))return;r.status='rescheduled';r.rescheduleMonth=month;setRideStatusOverride(id,'rescheduled');persistLocal(true);renderAll();await saveAll()}
 async function deleteRide(id){let r=rides.find(x=>x.id===id);if(!r||!confirm('Usunąć tę jazdę?'))return;if(r.passId&&r.status!=='rescheduled'){let p=passes.find(x=>x.id===r.passId);if(p&&Number(p.used)>0)p.used=Number(p.used)-1}rides=rides.filter(x=>x.id!==id);removeRideStatusOverride(id);renderAll();await saveAll()}
 function rideStatusBadge(r){let s=r.status||'planned';return s==='completed'?'<span class="badge green">ODBYTA</span>':s==='rescheduled'?'<span class="badge blue">PRZEŁOŻONA</span>':s==='noshow'?'<span class="badge red">NIEOBECNOŚĆ — PRZEPADA</span>':'<span class="badge orange">PLANOWANA</span>'}
-function renderSchedule(){let head=$('scheduleHead'),body=$('scheduleBody');head.innerHTML='';body.innerHTML='';let start=monday(currentDate),hr='<tr><th>Godz.</th>';for(let d=0;d<7;d++){let dt=addDays(start,d);hr+=`<th>${dayName(dt)}<br><span class="muted">${niceDate(dt)}</span></th>`}head.innerHTML=hr+'</tr>';for(let h=7;h<=20;h++)for(let m of [0,30]){let time=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'),tr=document.createElement('tr');tr.innerHTML=`<td>${time}</td>`;for(let d=0;d<7;d++){let ds=fmt(addDays(start,d)),td=document.createElement('td');rides.filter(r=>normalizeDate(r.date)===ds&&normalizeTime(r.time)===time).forEach(r=>{let rr=riders.find(x=>x.id===r.rider),hh=horses.find(x=>x.id===r.horse),ii=instructors.find(x=>x.id===r.instructor),gg=groups.find(x=>x.id===r.group),div=document.createElement('div');div.className='ride '+rideClass(r.type);let actions=(r.status||'planned')==='planned'?`<button onclick="markRideCompleted('${r.id}')">✓ Odbyta</button><button onclick="rescheduleRide('${r.id}')">↪ Przełóż</button><button onclick="markRideNoShow('${r.id}')">🚫 Nieobecność</button>`:'';div.innerHTML=`<b>${esc(rr?rr.name:'Jeździec')}</b><small>${rideLabel(r.type)}${gg?' • '+esc(gg.name):''}</small><small>🐴 ${esc(hh?hh.name:'')}</small><small>🧑‍🏫 ${esc(ii?ii.name:'')}</small><small>💰 ${Number(r.price||0)} zł${r.passId?' • karnet':''}</small>${rideStatusBadge(r)}${r.fixed?'<span class="badge">STAŁA</span>':''}${actions}<button onclick="deleteRide('${r.id}')">Usuń</button>`;td.appendChild(div)});tr.appendChild(td)}body.appendChild(tr)}}
+function renderSchedule(){let head=$('scheduleHead'),body=$('scheduleBody');head.innerHTML='';body.innerHTML='';let start=monday(currentDate),hr='<tr><th>Godz.</th>';for(let d=0;d<7;d++){let dt=addDays(start,d);hr+=`<th>${dayName(dt)}<br><span class="muted">${niceDate(dt)}</span></th>`}head.innerHTML=hr+'</tr>';for(let h=7;h<=20;h++)for(let m of [0,30]){let time=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'),tr=document.createElement('tr');tr.innerHTML=`<td>${time}</td>`;for(let d=0;d<7;d++){let ds=fmt(addDays(start,d)),td=document.createElement('td');rides.filter(r=>normalizeDate(r.date)===ds&&normalizeTime(r.time)===time).forEach(r=>{let rr=riders.find(x=>x.id===r.rider),hh=horses.find(x=>x.id===r.horse),ii=instructors.find(x=>x.id===r.instructor),gg=groups.find(x=>x.id===r.group),div=document.createElement('div');div.className='ride '+rideClass(r.type);let actions=(r.status||'planned')==='planned'?`<button onclick="markRideCompleted('${r.id}')">✓ Odbyta</button><button onclick="rescheduleRide('${r.id}')">↪ Przełóż</button><button onclick="markRideNoShow('${r.id}')">🚫 Nieobecność</button>`:`<button class="gray" onclick="resetRideStatus('${r.id}')">↩ Cofnij status</button>`;div.innerHTML=`<b>${esc(rr?rr.name:'Jeździec')}</b><small>${rideLabel(r.type)}${gg?' • '+esc(gg.name):''}</small><small>🐴 ${esc(hh?hh.name:'')}</small><small>🧑‍🏫 ${esc(ii?ii.name:'')}</small><small>💰 ${Number(r.price||0)} zł${r.passId?' • karnet':''}</small>${rideStatusBadge(r)}${r.fixed?'<span class="badge">STAŁA</span>':''}${actions}<button onclick="deleteRide('${r.id}')">Usuń</button>`;td.appendChild(div)});tr.appendChild(td)}body.appendChild(tr)}}
 async function copyWeek(){let fixed=rides.filter(r=>r.fixed);if(!fixed.length)return alert('Nie ma stałych jazd do skopiowania.');let next=addDays(monday(currentDate),7),added=0;fixed.forEach(r=>{let old=new Date(r.date+'T12:00:00'),off=old.getDay()===0?6:old.getDay()-1,newDate=fmt(addDays(next,off));if(!rides.some(x=>x.date===newDate&&normalizeTime(x.time)===normalizeTime(r.time)&&x.rider===r.rider&&x.horse===r.horse)){rides.push({...r,id:uid(),date:newDate,time:normalizeTime(r.time),passId:''});added++}});renderAll();await saveAll();alert('Skopiowano '+added+' jazd.')}
 function previousWeek(){currentDate=addDays(currentDate,-7);renderSchedule()}
 function nextWeek(){currentDate=addDays(currentDate,7);renderSchedule()}
