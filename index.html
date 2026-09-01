@@ -62,11 +62,30 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
   <h1>🐴 Stajnia Siemowo Manager</h1>
   <div class="sync"><span id="syncDot" class="dot"></span><span id="syncText" class="muted">Łączenie z arkuszem…</span><button class="blue" onclick="loadAll()">↻ Odśwież</button></div>
   <nav>
-    <button onclick="showPage('grafik')">📅 Grafik</button><button onclick="showPage('jezdzcy')">👤 Jeźdźcy</button><button onclick="showPage('karnety')">🎟️ Karnety</button><button onclick="showPage('grupy')">👥 Grupy</button><button onclick="showPage('konie')">🐴 Konie</button><button onclick="showPage('instruktorzy')">🧑‍🏫 Instruktorzy</button>
+    <button onclick="showPage('start')">🏠 Start</button><button onclick="showPage('grafik')">📅 Grafik</button><button onclick="showPage('jezdzcy')">👤 Jeźdźcy</button><button onclick="showPage('karnety')">🎟️ Karnety</button><button onclick="showPage('grupy')">👥 Grupy</button><button onclick="showPage('konie')">🐴 Konie</button><button onclick="showPage('instruktorzy')">🧑‍🏫 Instruktorzy</button>
   </nav>
 </header>
 <main>
-<section id="grafik" class="page active">
+<section id="start" class="page active">
+  <div class="card">
+    <h2>🏠 Start — dzisiaj</h2>
+    <div id="startDate" class="muted" style="margin-bottom:12px"></div>
+    <div class="grid3">
+      <div class="card" style="margin:0"><div class="muted">Dzisiejsze jazdy</div><div id="startRideCount" style="font-size:30px;font-weight:800">0</div></div>
+      <div class="card" style="margin:0"><div class="muted">Karnety do zapłaty</div><div id="startUnpaidCount" style="font-size:30px;font-weight:800">0</div></div>
+      <div class="card" style="margin:0"><div class="muted">Karnety kończące się</div><div id="startEndingCount" style="font-size:30px;font-weight:800">0</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 class="section-title">📅 Dzisiejsze jazdy</h3>
+    <div id="startTodayRides"></div>
+  </div>
+  <div class="card">
+    <h3 class="section-title">🔔 Do ogarnięcia</h3>
+    <div id="startTasks"></div>
+  </div>
+</section>
+<section id="grafik" class="page">
   <div class="card"><h2>📅 Grafik jazdy</h2><div class="actions"><button onclick="previousWeek()">← Poprzedni</button><button onclick="goToday()">Dziś</button><button onclick="nextWeek()">Następny →</button><button class="green" onclick="openRideModal()">＋ Dodaj jazdę</button><button class="blue" onclick="copyWeek()">🔄 Kopiuj stałe</button></div></div>
   <div class="schedule-wrap"><table class="schedule"><thead id="scheduleHead"></thead><tbody id="scheduleBody"></tbody></table></div>
 </section>
@@ -111,7 +130,16 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
     <div class="actions"><button class="blue" onclick="savePriceSettings()">💾 Zapisz cennik</button></div>
     <div class="inline-note">Przy każdej pojedynczej jeździe cenę możesz dodatkowo nadpisać ręcznie.</div>
   </div>
-  <div class="card table-scroll"><table><thead><tr><th>Jeździec</th><th>Postęp</th><th>Cena</th><th>Płatność</th><th>Ważny do</th><th>Status</th><th>Akcje</th></tr></thead><tbody id="passesTable"></tbody></table></div>
+  <div class="card">
+    <h3 class="section-title">✅ Aktywne karnety <span id="activePassCount" class="badge green"></span></h3>
+    <div class="inline-note" style="margin-bottom:12px">Tutaj widzisz tylko karnety, z których można jeszcze korzystać.</div>
+    <div class="table-scroll"><table><thead><tr><th>Jeździec</th><th>Postęp</th><th>Zostało</th><th>Cena</th><th>Płatność</th><th>Ważny do</th><th>Akcje</th></tr></thead><tbody id="passesTable"></tbody></table></div>
+  </div>
+  <details class="card" id="passesArchive">
+    <summary style="cursor:pointer;font-weight:800;font-size:18px">📦 Archiwum karnetów <span id="archivePassCount" class="badge"></span></summary>
+    <div class="inline-note" style="margin:10px 0 12px">Wygasłe i wykorzystane karnety są zachowane, ale nie mieszają się z aktywnymi.</div>
+    <div class="table-scroll"><table><thead><tr><th>Jeździec</th><th>Postęp</th><th>Cena</th><th>Płatność</th><th>Ważny do</th><th>Status</th><th>Akcje</th></tr></thead><tbody id="passesArchiveTable"></tbody></table></div>
+  </details>
 </section>
 
 <section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div>
@@ -252,7 +280,27 @@ function refreshSelects(){
   let rg=$('rideGroup'),old=rg.value;rg.innerHTML='<option value="">Bez grupy</option>';groups.forEach(g=>rg.add(new Option(g.name,g.id)));rg.value=old;
   createMemberSelectors(memberValues);
 }
-function renderAll(){renderRiders();renderHorses();renderInstructors();renderPasses();renderGroups();refreshSelects();renderSchedule()}
+
+function renderStart(){
+  let today=fmt(new Date()),todayRides=rides.filter(r=>normalizeDate(r.date)===today).sort((a,b)=>normalizeTime(a.time).localeCompare(normalizeTime(b.time)));
+  let activePasses=passes.filter(p=>passState(p).active);
+  let unpaid=activePasses.filter(p=>(p.paymentStatus||'paid')==='unpaid');
+  let limit=fmt(addDays(new Date(),7));
+  let ending=activePasses.filter(p=>{let e=normalizeDate(p.end);return e&&e>=today&&e<=limit});
+  let d=$('startDate');if(d)d.textContent=new Date().toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  if($('startRideCount'))$('startRideCount').textContent=todayRides.length;
+  if($('startUnpaidCount'))$('startUnpaidCount').textContent=unpaid.length;
+  if($('startEndingCount'))$('startEndingCount').textContent=ending.length;
+  if($('startTodayRides'))$('startTodayRides').innerHTML=todayRides.length?todayRides.map(r=>{
+    let rr=riders.find(x=>x.id===r.rider),hh=horses.find(x=>x.id===r.horse),ii=instructors.find(x=>x.id===r.instructor);
+    return `<div style="padding:11px 0;border-bottom:1px solid #eee"><b style="font-size:18px">${esc(normalizeTime(r.time))} — ${esc(rr?rr.name:'Jeździec')}</b><div class="muted" style="margin-top:4px">🐴 ${esc(hh?hh.name:'—')} &nbsp; 🧑‍🏫 ${esc(ii?ii.name:'—')} &nbsp; ${rideStatusBadge(r)}</div></div>`;
+  }).join(''):'<div class="empty">Na dziś nie ma wpisanych jazd.</div>';
+  let tasks=[];
+  unpaid.forEach(p=>{let r=riders.find(x=>x.id===p.rider);tasks.push(`💰 <b>${esc(r?r.name:'Jeździec')}</b> — karnet do zapłaty (${Number(p.price||0)} zł)`)});
+  ending.forEach(p=>{let r=riders.find(x=>x.id===p.rider),left=Math.max(0,Number(p.total)-Number(p.used||0));tasks.push(`🎟️ <b>${esc(r?r.name:'Jeździec')}</b> — karnet ważny do ${esc(normalizeDate(p.end))}, zostało ${left} jazd`)});
+  if($('startTasks'))$('startTasks').innerHTML=tasks.length?tasks.map(x=>`<div style="padding:10px 0;border-bottom:1px solid #eee">${x}</div>`).join(''):'<div class="empty">Na teraz nic pilnego. ✓</div>';
+}
+function renderAll(){renderRiders();renderHorses();renderInstructors();renderPasses();renderGroups();refreshSelects();renderSchedule();renderStart()}
 
 function riderSearchText(r){return `${r.name||''} ${r.phone||''} ${r.level||''}`.toLocaleLowerCase('pl-PL')}
 function filterPassRiders(){
@@ -382,7 +430,26 @@ async function addInstructor(){let name=$('instructorName').value.trim();if(!nam
 async function deleteInstructor(id){if(!confirm('Usunąć instruktora?'))return;instructors=instructors.filter(x=>x.id!==id);renderAll();await saveAll()}
 
 function paymentLabel(p){return (p.paymentStatus||'paid')==='paid'?'<span class="badge green">Zapłacony</span>':'<span class="badge orange">Do zapłaty</span>'}
-function renderPasses(){$('passesTable').innerHTML=passes.length?passes.map(p=>{let r=riders.find(x=>x.id===p.rider),expired=p.end&&p.end<fmt(new Date()),done=Number(p.used)>=Number(p.total);return `<tr><td>${esc(r?r.name:p.rider)}</td><td>${p.used||0} / ${p.total}</td><td>${Number(p.price||0)} zł</td><td>${paymentLabel(p)}<div class="actions"><button class="gray" onclick="togglePassPayment('${p.id}')">${(p.paymentStatus||'paid')==='paid'?'Oznacz: do zapłaty':'Oznacz: zapłacony'}</button></div></td><td>${esc(normalizeDate(p.end))}</td><td>${expired?'<span class="badge red">Wygasł</span>':done?'<span class="badge red">Wykorzystany</span>':'<span class="badge green">Aktywny</span>'}</td><td><button class="red" onclick="deletePass('${p.id}')">Usuń</button></td></tr>`}).join(''):'<tr><td colspan="7" class="empty">Brak karnetów.</td></tr>'}
+function passState(p){
+  let today=fmt(new Date()),end=normalizeDate(p.end),done=Number(p.used)>=Number(p.total),expired=!!(end&&end<today);
+  return {done,expired,active:!done&&!expired};
+}
+function renderPasses(){
+  let active=passes.filter(p=>passState(p).active);
+  let archived=passes.filter(p=>!passState(p).active);
+  let ac=$('activePassCount'),ar=$('archivePassCount');
+  if(ac)ac.textContent=active.length;
+  if(ar)ar.textContent=archived.length;
+  $('passesTable').innerHTML=active.length?active.map(p=>{
+    let r=riders.find(x=>x.id===p.rider),left=Math.max(0,Number(p.total)-Number(p.used||0));
+    return `<tr><td><b>${esc(r?r.name:p.rider)}</b></td><td>${p.used||0} / ${p.total}</td><td><span class="badge green"><b>${left}</b> ${left===1?'jazda':'jazdy'}</span></td><td>${Number(p.price||0)} zł</td><td>${paymentLabel(p)}<div class="actions"><button class="gray" onclick="togglePassPayment('${p.id}')">${(p.paymentStatus||'paid')==='paid'?'Oznacz: do zapłaty':'Oznacz: zapłacony'}</button></div></td><td>${esc(normalizeDate(p.end)||'—')}</td><td><button class="red" onclick="deletePass('${p.id}')">Usuń</button></td></tr>`;
+  }).join(''):'<tr><td colspan="7" class="empty">Brak aktywnych karnetów.</td></tr>';
+  let archiveTable=$('passesArchiveTable');
+  if(archiveTable)archiveTable.innerHTML=archived.length?archived.map(p=>{
+    let r=riders.find(x=>x.id===p.rider),s=passState(p),status=s.done?'<span class="badge red">Wykorzystany</span>':'<span class="badge red">Wygasł</span>';
+    return `<tr><td><b>${esc(r?r.name:p.rider)}</b></td><td>${p.used||0} / ${p.total}</td><td>${Number(p.price||0)} zł</td><td>${paymentLabel(p)}</td><td>${esc(normalizeDate(p.end)||'—')}</td><td>${status}</td><td><button class="red" onclick="deletePass('${p.id}')">Usuń</button></td></tr>`;
+  }).join(''):'<tr><td colspan="7" class="empty">Archiwum jest puste.</td></tr>';
+}
 async function togglePassPayment(id){
   let p=passes.find(x=>x.id===id);if(!p)return;
   p.paymentStatus=(p.paymentStatus||'paid')==='paid'?'unpaid':'paid';
