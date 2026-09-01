@@ -34,6 +34,7 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
 .quick-results{margin-top:6px;border:1px solid #ddd;border-radius:10px;overflow:hidden;background:#fff;display:none;max-height:220px;overflow-y:auto}
 .quick-result{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #eee;border-radius:0;background:#fff;color:#222;padding:10px 12px;font-size:14px}
 .quick-result:last-child{border-bottom:0}.quick-result:hover{background:#f2f6ff}.quick-empty{padding:10px 12px;color:#777;font-size:13px}
+.horse-board{display:grid;grid-template-columns:1fr 1fr;gap:14px}.horse-board-box{border-radius:14px;padding:14px;background:#f7f7f7}.horse-board-box.free{background:#edf8ef}.horse-board-item{padding:8px 0;border-bottom:1px solid #ddd}.horse-board-item:last-child{border-bottom:0}.group-horse-tools{grid-column:1/-1;display:grid;grid-template-columns:1fr;gap:6px}
 
 .group-list{display:flex;flex-direction:column;gap:18px}
 .group-day-section{display:flex;flex-direction:column;gap:10px}
@@ -47,13 +48,13 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
 .group-count.full{background:#fff0f0;color:#b71c1c}
 .group-members{margin-top:10px;padding-top:10px;border-top:1px solid #eee;line-height:1.45}
 .group-members b{display:block;margin-bottom:4px}.group-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.group-card-actions button{padding:9px 11px;font-size:14px}.group-day-filter.active{background:#1565c0;box-shadow:0 0 0 3px #dcecff}
+.group-card-actions button{padding:9px 11px;font-size:14px}
 @media(max-width:700px){.group-list{gap:14px}.group-day-title{font-size:22px}.group-card{padding:13px}.group-card-top{display:block}.group-card-main{display:grid;grid-template-columns:auto 1fr;gap:10px}.group-time-badge{font-size:20px}.group-card-actions{display:grid;grid-template-columns:1fr 1fr}.group-card-actions button{width:100%;font-size:16px}.group-members{font-size:16px}.group-card-name{font-size:20px}}
 @media(max-width:700px){
  .grid2,.grid3{grid-template-columns:1fr}.table-scroll{overflow:visible}.table-scroll table{display:block;width:100%}.table-scroll thead{display:none}
  .table-scroll tbody,.table-scroll tr,.table-scroll td{display:block;width:100%}.table-scroll tr{border:1px solid #ddd;border-radius:12px;margin:0 0 12px;padding:8px;background:#fff}
  .table-scroll td{border:0;border-bottom:1px solid #eee;padding:8px;overflow-wrap:anywhere}.table-scroll td:last-child{border-bottom:0}
- .group-schedule-row{grid-template-columns:auto 1fr}.group-schedule-row select{grid-column:1/-1}
+ .group-schedule-row{grid-template-columns:auto 1fr}.group-schedule-row .group-horse-tools{grid-column:1/-1}.horse-board{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -79,6 +80,13 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
   <div class="card">
     <h3 class="section-title">📅 Dzisiejsze jazdy</h3>
     <div id="startTodayRides"></div>
+  </div>
+  <div class="card">
+    <h3 class="section-title">🐴 Konie na dzisiaj</h3>
+    <div class="horse-board">
+      <div class="horse-board-box"><h3 style="margin-top:0">Wpisane do jazd</h3><div id="startBusyHorses"></div></div>
+      <div class="horse-board-box free"><h3 style="margin-top:0">Wolne — można zabrać</h3><div id="startFreeHorses"></div></div>
+    </div>
   </div>
   <div class="card">
     <h3 class="section-title">🔔 Do ogarnięcia</h3>
@@ -142,13 +150,21 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
   </details>
 </section>
 
-<section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div>
+<section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2>
+<div class="actions" id="groupDayFilters" style="margin-bottom:14px">
+<button class="gray" onclick="setGroupDayFilter('all')">Wszystkie</button>
+<button onclick="setGroupDayFilter(1)">Poniedziałek</button>
+<button onclick="setGroupDayFilter(2)">Wtorek</button>
+<button onclick="setGroupDayFilter(3)">Środa</button>
+<button onclick="setGroupDayFilter(4)">Czwartek</button>
+<button onclick="setGroupDayFilter(5)">Piątek</button>
+</div><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div>
       <label>🔎 Szybko dodaj jeźdźca do grupy</label>
       <input id="groupRiderSearch" type="search" placeholder="Wpisz imię, nazwisko lub telefon…" autocomplete="off" oninput="filterGroupRiders()" onfocus="filterGroupRiders()">
       <div id="groupRiderResults" class="quick-results"></div>
       <div class="inline-note">Kliknij osobę — zostanie dodana do pierwszego wolnego miejsca.</div>
       <div style="margin-top:12px"><label>Jeźdźcy w grupie — maksymalnie 6</label><div id="groupMembers"></div></div>
-    </div><div class="actions"><button id="groupSaveBtn" class="green" onclick="saveGroup()">＋ Zapisz grupę</button><button id="groupCancelBtn" class="gray" style="display:none" onclick="cancelGroupEdit()">Anuluj edycję</button></div></div><div class="card"><div style="font-weight:800;margin-bottom:10px">Pokaż grupy:</div><div id="groupDayFilters" class="actions" style="margin-top:0;margin-bottom:14px"><button class="group-day-filter" data-day="1" onclick="setGroupDayFilter(1)">Pon</button><button class="group-day-filter" data-day="2" onclick="setGroupDayFilter(2)">Wt</button><button class="group-day-filter" data-day="3" onclick="setGroupDayFilter(3)">Śr</button><button class="group-day-filter" data-day="4" onclick="setGroupDayFilter(4)">Czw</button><button class="group-day-filter" data-day="5" onclick="setGroupDayFilter(5)">Pt</button><button class="group-day-filter" data-day="all" onclick="setGroupDayFilter('all')">Wszystkie</button></div><div id="groupsTable" class="group-list"></div></div></section>
+    </div><div class="actions"><button id="groupSaveBtn" class="green" onclick="saveGroup()">＋ Zapisz grupę</button><button id="groupCancelBtn" class="gray" style="display:none" onclick="cancelGroupEdit()">Anuluj edycję</button></div></div><div class="card"><div id="groupsTable" class="group-list"></div></div></section>
 <section id="konie" class="page"><div class="card"><h2>🐴 Konie</h2><div class="grid2"><div><label>Imię konia</label><input id="horseName"></div><div><label>Typ</label><select id="horseType"><option>Koń szkółkowy</option><option>Koń sportowy</option><option>Koń prywatny</option><option>Koń do hipoterapii</option></select></div></div><div class="actions"><button class="green" onclick="addHorse()">＋ Dodaj konia</button></div></div><div class="card table-scroll"><table><thead><tr><th>Koń</th><th>Typ</th><th>Akcje</th></tr></thead><tbody id="horsesTable"></tbody></table></div></section>
 <section id="instruktorzy" class="page"><div class="card"><h2>🧑‍🏫 Instruktorzy</h2><div class="grid2"><div><label>Imię i nazwisko</label><input id="instructorName"></div><div><label>Specjalizacja</label><select id="instructorType"><option>Jazda rekreacyjna</option><option>Sport</option><option>Lonża</option><option>Hipoterapia</option><option>Wszystkie</option></select></div></div><div class="actions"><button class="green" onclick="addInstructor()">＋ Dodaj instruktora</button></div></div><div class="card table-scroll"><table><thead><tr><th>Instruktor</th><th>Specjalizacja</th><th>Odbyte w tym miesiącu</th><th>Odbyte łącznie</th><th>Akcje</th></tr></thead><tbody id="instructorsTable"></tbody></table></div></section>
 </main>
@@ -217,6 +233,8 @@ function dayName(d){return['ndz.','pon.','wt.','śr.','czw.','pt.','sob.'][d.get
 function niceDate(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')}
 function normalizeTime(v){let s=String(v??'');let m=s.match(/(?:T|\s)(\d{2}):(\d{2})/);if(m)return m[1]+':'+m[2];m=s.match(/^(\d{1,2}):(\d{2})/);if(m)return String(m[1]).padStart(2,'0')+':'+m[2];return s}
 function normalizeDate(v){let s=String(v??'');let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];let d=new Date(v);if(!isNaN(d))return fmt(d);return s}
+function phoneDigits(v){return String(v||'').replace(/[^0-9+]/g,'')}
+function sendSms(riderId){let r=riders.find(x=>x.id===riderId);if(!r||!phoneDigits(r.phone))return alert('Najpierw wpisz numer telefonu tej osoby.');let next=rides.filter(x=>x.rider===riderId&&normalizeDate(x.date)>=fmt(new Date())&&(x.status||'planned')==='planned').sort((a,b)=>String(normalizeDate(a.date)+normalizeTime(a.time)).localeCompare(String(normalizeDate(b.date)+normalizeTime(b.time))))[0];let message=next?`Przypominamy o jeździe w Stajni Siemowo: ${normalizeDate(next.date)} o ${normalizeTime(next.time)}. Prosimy o potwierdzenie obecności.`:'Wiadomość ze Stajni Siemowo.';window.location.href='sms:'+phoneDigits(r.phone)+'?&body='+encodeURIComponent(message)}
 function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
 function setSync(ok,text){$('syncDot').className='dot '+(ok?'ok':'bad');$('syncText').textContent=text}
 function busy(v){$('loading').style.display=v?'block':'none'}
@@ -293,8 +311,12 @@ function renderStart(){
   if($('startEndingCount'))$('startEndingCount').textContent=ending.length;
   if($('startTodayRides'))$('startTodayRides').innerHTML=todayRides.length?todayRides.map(r=>{
     let rr=riders.find(x=>x.id===r.rider),hh=horses.find(x=>x.id===r.horse),ii=instructors.find(x=>x.id===r.instructor);
-    return `<div style="padding:11px 0;border-bottom:1px solid #eee"><b style="font-size:18px">${esc(normalizeTime(r.time))} — ${esc(rr?rr.name:'Jeździec')}</b><div class="muted" style="margin-top:4px">🐴 ${esc(hh?hh.name:'—')} &nbsp; 🧑‍🏫 ${esc(ii?ii.name:'—')} &nbsp; ${rideStatusBadge(r)}</div></div>`;
+    return `<div style="padding:11px 0;border-bottom:1px solid #eee"><b style="font-size:18px">${esc(normalizeTime(r.time))} — ${esc(rr?rr.name:'Jeździec')}</b><div class="muted" style="margin-top:4px">🐴 ${esc(hh?hh.name:'—')} &nbsp; 🧑‍🏫 ${esc(ii?ii.name:'—')} &nbsp; ${rideStatusBadge(r)}</div>${rr&&rr.phone?`<button class="blue" style="margin-top:7px;padding:7px 10px" onclick="sendSms('${rr.id}')">📱 Wyślij przypomnienie</button>`:''}</div>`;
   }).join(''):'<div class="empty">Na dziś nie ma wpisanych jazd.</div>';
+  let horseWork={};todayRides.filter(r=>(r.status||'planned')!=='rescheduled'&&r.horse).forEach(r=>(horseWork[r.horse]||(horseWork[r.horse]=[])).push(normalizeTime(r.time)));
+  let busyHorses=horses.filter(h=>horseWork[h.id]),freeHorses=horses.filter(h=>!horseWork[h.id]);
+  if($('startBusyHorses'))$('startBusyHorses').innerHTML=busyHorses.length?busyHorses.map(h=>`<div class="horse-board-item"><b>🐴 ${esc(h.name)}</b><div class="muted">${horseWork[h.id].length} ${horseWork[h.id].length===1?'jazda':'jazdy'}: ${horseWork[h.id].sort().map(esc).join(', ')}</div></div>`).join(''):'<div class="muted">Żaden koń nie jest jeszcze wpisany.</div>';
+  if($('startFreeHorses'))$('startFreeHorses').innerHTML=freeHorses.length?freeHorses.map(h=>`<div class="horse-board-item"><b>🐴 ${esc(h.name)}</b><div class="muted">${esc(h.type||'')}</div></div>`).join(''):'<div class="muted">Brak wolnych koni.</div>';
   let tasks=[];
   unpaid.forEach(p=>{let r=riders.find(x=>x.id===p.rider);tasks.push(`💰 <b>${esc(r?r.name:'Jeździec')}</b> — karnet do zapłaty (${Number(p.price||0)} zł)`)});
   ending.forEach(p=>{let r=riders.find(x=>x.id===p.rider),left=Math.max(0,Number(p.total)-Number(p.used||0));tasks.push(`🎟️ <b>${esc(r?r.name:'Jeździec')}</b> — karnet ważny do ${esc(normalizeDate(p.end))}, zostało ${left} jazd`)});
@@ -364,7 +386,7 @@ function addGroupRiderQuick(id){
   if($('groupRiderResults'))$('groupRiderResults').style.display='none';
 }
 
-function renderRiders(){let q=($('riderSearch')?.value||'').trim().toLocaleLowerCase('pl-PL');let filtered=q?riders.filter(r=>riderSearchText(r).includes(q)):riders;let summary=$('riderSearchSummary');if(summary)summary.textContent=q?`Znaleziono: ${filtered.length} z ${riders.length}`:`Liczba jeźdźców: ${riders.length}`;$('ridersTable').innerHTML=filtered.length?filtered.map(r=>`<tr><td>👤 ${esc(r.name)}</td><td>${esc(r.phone)}</td><td>${esc(r.level)}</td><td><div class="actions"><button class="blue" onclick="openRiderCard('${r.id}')">Karta</button><button class="gray" onclick="editRider('${r.id}')">Edytuj</button><button class="red" onclick="deleteRider('${r.id}')">Usuń</button></div></td></tr>`).join(''):`<tr><td colspan="4" class="empty">${q?'Brak jeźdźców pasujących do wyszukiwania.':'Brak jeźdźców.'}</td></tr>`}
+function renderRiders(){let q=($('riderSearch')?.value||'').trim().toLocaleLowerCase('pl-PL');let filtered=q?riders.filter(r=>riderSearchText(r).includes(q)):riders;let summary=$('riderSearchSummary');if(summary)summary.textContent=q?`Znaleziono: ${filtered.length} z ${riders.length}`:`Liczba jeźdźców: ${riders.length}`;$('ridersTable').innerHTML=filtered.length?filtered.map(r=>`<tr><td>👤 ${esc(r.name)}</td><td>${esc(r.phone)}</td><td>${esc(r.level)}</td><td><div class="actions"><button class="blue" onclick="openRiderCard('${r.id}')">Karta</button>${r.phone?`<button class="green" onclick="sendSms('${r.id}')">📱 SMS</button>`:''}<button class="gray" onclick="editRider('${r.id}')">Edytuj</button><button class="red" onclick="deleteRider('${r.id}')">Usuń</button></div></td></tr>`).join(''):`<tr><td colspan="4" class="empty">${q?'Brak jeźdźców pasujących do wyszukiwania.':'Brak jeźdźców.'}</td></tr>`}
 async function addRider(){let name=$('riderName').value.trim();if(!name)return alert('Wpisz imię i nazwisko.');let editId=$('riderEditId').value;if(editId){let r=riders.find(x=>x.id===editId);if(r){r.name=name;r.phone=$('riderPhone').value.trim();r.level=$('riderLevel').value}}else{riders.push({id:uid(),name,phone:$('riderPhone').value.trim(),level:$('riderLevel').value})}cancelRiderEdit();renderAll();await saveAll()}
 function editRider(id){let r=riders.find(x=>x.id===id);if(!r)return;$('riderEditId').value=id;$('riderName').value=r.name||'';$('riderPhone').value=r.phone||'';$('riderLevel').value=r.level||'Początkujący';$('riderSaveBtn').textContent='💾 Zapisz zmiany';$('riderCancelBtn').style.display='inline-block';showPage('jezdzcy');window.scrollTo({top:0,behavior:'smooth'})}
 function cancelRiderEdit(){$('riderEditId').value='';$('riderName').value='';$('riderPhone').value='';$('riderLevel').value='Początkujący';$('riderSaveBtn').textContent='＋ Dodaj jeźdźca';$('riderCancelBtn').style.display='none'}
@@ -376,11 +398,11 @@ function openRiderCard(id){
   let completed=rr.filter(x=>(x.status||'planned')==='completed').length;
   let noshow=rr.filter(x=>(x.status||'planned')==='noshow').length;
   let rescheduled=rr.filter(x=>(x.status||'planned')==='rescheduled').length;
-  let active=pp.filter(p=>Number(p.used)<Number(p.total)&&(!p.start||p.start<=today)&&(!p.end||p.end>=today));
+  let active=pp.filter(p=>passState(p).active);
   $('riderCardTitle').textContent='👤 '+(r.name||'Jeździec');
   $('riderCardBody').innerHTML=`
     <div class="card">
-      <b>Telefon:</b> ${esc(r.phone||'—')}<br>
+      <b>Telefon:</b> ${esc(r.phone||'—')}<br>${r.phone?`<button class="blue" style="margin-top:10px" onclick="sendSms('${r.id}')">📱 Wyślij SMS</button>`:''}<br>
       <b>Poziom:</b> ${esc(r.level||'—')}
     </div>
     <div class="card">
@@ -395,7 +417,7 @@ function openRiderCard(id){
       <div><b>Czy ma aktywny karnet:</b> ${active.length?'<span class="badge green">TAK</span>':'<span class="badge red">NIE</span>'}</div>
       <div style="margin-top:8px"><b>Liczba aktywnych karnetów:</b> ${active.length}</div>
       ${pp.length?pp.map(p=>`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee">
-        ${esc(p.total)} jazd • wykorzystane ${esc(p.used||0)} • ${esc(p.price||0)} zł • ${paymentLabel(p)} • ważny do ${esc(normalizeDate(p.end)||'—')}
+        ${esc(p.total)} jazd • wykorzystane ${esc(p.used||0)} • zostało ${Math.max(0,Number(p.total)-Number(p.used||0))} • ${esc(p.price||0)} zł • ${paymentLabel(p)} • ważny do ${esc(normalizeDate(p.end)||'—')}
       </div>`).join(''):'<div class="muted" style="margin-top:8px">Brak karnetów.</div>'}
     </div>
     <div class="card">
@@ -488,31 +510,55 @@ async function saveGroupAttendance(){
   persistLocal(true);renderAll();await saveAll();closeGroupAttendance();alert('Lista obecności zapisana.');
 }
 
-let groupDayFilter=(()=>{let d=new Date().getDay();return d>=1&&d<=5?d:1})();
+let groupDayFilter='all';
 function setGroupDayFilter(day){groupDayFilter=day;renderGroups()}
 function renderGroups(){
   let days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
-  document.querySelectorAll('.group-day-filter').forEach(b=>b.classList.toggle('active',String(b.dataset.day)===String(groupDayFilter)));
-  let sortedGroups=groups.slice().sort((a,b)=>{let da=Number(a.day),db=Number(b.day);let oa=da===0?7:da,ob=db===0?7:db;if(oa!==ob)return oa-ob;return normalizeTime(a.time).localeCompare(normalizeTime(b.time))});
+  let sortedGroups=groups.slice().sort((a,b)=>{
+    let da=Number(a.day),db=Number(b.day),oa=da===0?7:da,ob=db===0?7:db;
+    if(oa!==ob)return oa-ob;
+    return normalizeTime(a.time).localeCompare(normalizeTime(b.time))
+  });
   if(groupDayFilter!=='all')sortedGroups=sortedGroups.filter(g=>Number(g.day)===Number(groupDayFilter));
-  let box=$('groupsTable');
-  if(!sortedGroups.length){box.innerHTML='<div class="empty">Brak grup w wybranym dniu.</div>';return}
-  let byDay={};sortedGroups.forEach(g=>{let d=Number(g.day);(byDay[d]||(byDay[d]=[])).push(g)});
+  let byDay={};
+  sortedGroups.forEach(g=>{let d=Number(g.day);(byDay[d]||(byDay[d]=[])).push(g)});
   let order=[1,2,3,4,5,6,0];
-  box.innerHTML=order.filter(d=>byDay[d]?.length).map(d=>`<div class="group-day-section"><div class="group-day-title">📅 ${days[d]}</div>${byDay[d].map(g=>{
-    let ins=instructors.find(i=>i.id===g.instructor);
-    let memberNames=(g.members||[]).map(id=>(riders.find(r=>r.id===id)||{}).name).filter(Boolean);
-    let count=memberNames.length,free=Math.max(0,6-count),full=count>=6;
-    let countText=full?`👥 ${count}/6 — PEŁNA`:`👥 ${count}/6 — ${free} ${free===1?'wolne miejsce':'wolne miejsca'}`;
-    return `<div class="group-card"><div class="group-card-top"><div class="group-card-main"><div class="group-time-badge">${esc(normalizeTime(g.time))}</div><div><div class="group-card-name">${esc(g.name)}</div><div class="group-card-instructor">🧑‍🏫 ${esc(ins?ins.name:'Brak instruktora')}</div><span class="group-count ${full?'full':''}">${countText}</span></div></div></div><div class="group-members"><b>Jeźdźcy:</b>${memberNames.length?esc(memberNames.join(', ')):'<span class="muted"> Brak osób w grupie</span>'}</div><div class="group-card-actions"><button class="green" onclick="openGroupSchedule('${g.id}')">📅 Dodaj do grafiku</button><button class="blue" onclick="openGroupAttendance('${g.id}')">✓ Obecność</button><button class="gray" onclick="editGroup('${g.id}')">Edytuj</button><button class="red" onclick="deleteGroup('${g.id}')">Usuń</button></div></div>`
-  }).join('')}</div>`).join('')
+  let html=order.filter(d=>byDay[d]&&byDay[d].length).map(d=>`
+    <div class="group-day-section">
+      <div class="group-day-title">${days[d]}</div>
+      ${byDay[d].map(g=>{
+        let memberNames=(g.members||[]).map(id=>{let r=riders.find(x=>x.id===id);return r?r.name:id});
+        let count=memberNames.length,left=Math.max(0,6-count),full=count>=6;
+        let i=instructors.find(x=>x.id===g.instructor);
+        return `<div class="group-card">
+          <div class="group-card-top">
+            <div class="group-card-main">
+              <div class="group-time-badge">${esc(normalizeTime(g.time))}</div>
+              <div>
+                <div class="group-card-name">${esc(g.name)}</div>
+                <div class="group-card-instructor">🧑‍🏫 ${esc(i?i.name:'—')}</div>
+                <span class="group-count ${full?'full':''}">👥 ${count}/6 — ${full?'PEŁNA':left+' wolne '+(left===1?'miejsce':'miejsca')}</span>
+              </div>
+            </div>
+          </div>
+          <div class="group-members"><b>Jeźdźcy:</b> ${memberNames.length?memberNames.map(esc).join(', '):'<span class="muted">brak</span>'}</div>
+          <div class="group-card-actions">
+            <button class="blue" onclick="openGroupAttendance('${g.id}')">Obecność</button>
+            <button class="green" onclick="openGroupSchedule('${g.id}')">Dodaj do grafiku</button>
+            <button onclick="editGroup('${g.id}')">Edytuj</button>
+            <button class="red" onclick="deleteGroup('${g.id}')">Usuń</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+  $('groupsTable').innerHTML=html||'<div class="empty">Brak grup dla wybranego dnia.</div>';
 }
-async function saveGroup(){let name=$('groupName').value.trim();if(!name)return alert('Wpisz nazwę grupy.');let members=[...new Set(currentGroupMemberValues().filter(Boolean))];let data={name,day:Number($('groupDay').value),time:normalizeTime($('groupTime').value),instructor:$('groupInstructor').value,members};let editId=$('groupEditId').value;if(editId){let g=groups.find(x=>x.id===editId);if(g)Object.assign(g,data)}else groups.push({id:uid(),...data});cancelGroupEdit();renderAll();await saveAll()}
 function editGroup(id){let g=groups.find(x=>x.id===id);if(!g)return;$('groupEditId').value=id;$('groupName').value=g.name||'';$('groupDay').value=String(Number(g.day));$('groupTime').value=normalizeTime(g.time);$('groupInstructor').value=g.instructor||'';createMemberSelectors(g.members||[]);$('groupSaveBtn').textContent='💾 Zapisz zmiany';$('groupCancelBtn').style.display='inline-block';showPage('grupy');window.scrollTo({top:0,behavior:'smooth'})}
 function cancelGroupEdit(){if($('groupRiderSearch'))$('groupRiderSearch').value='';if($('groupRiderResults'))$('groupRiderResults').style.display='none';$('groupEditId').value='';$('groupName').value='';$('groupDay').value='1';$('groupTime').value='07:00';$('groupInstructor').value='';createMemberSelectors([]);$('groupSaveBtn').textContent='＋ Zapisz grupę';$('groupCancelBtn').style.display='none'}
 async function deleteGroup(id){if(!confirm('Usunąć grupę?'))return;groups=groups.filter(x=>x.id!==id);renderAll();await saveAll()}
 function nextDateForWeekday(day){let d=new Date();d.setHours(12,0,0,0);let diff=(Number(day)-d.getDay()+7)%7;return fmt(addDays(d,diff))}
-function openGroupSchedule(id){let g=groups.find(x=>x.id===id);if(!g)return;if(!(g.members||[]).length)return alert('Ta grupa nie ma jeszcze jeźdźców.');$('groupScheduleId').value=id;$('groupScheduleTitle').textContent='📅 '+(g.name||'Grupa')+' — dodaj do grafiku';$('groupScheduleDate').value=nextDateForWeekday(g.day);$('groupScheduleTime').value=normalizeTime(g.time);let ins=$('groupScheduleInstructor');ins.innerHTML='<option value="">Wybierz instruktora</option>';instructors.forEach(i=>ins.add(new Option(i.name,i.id)));ins.value=g.instructor||'';$('groupScheduleFixed').value='true';let box=$('groupScheduleMembers');box.innerHTML='';(g.members||[]).forEach(riderId=>{let r=riders.find(x=>x.id===riderId);if(!r)return;let row=document.createElement('div');row.className='group-schedule-row';row.innerHTML=`<input class="group-going" type="checkbox" checked data-rider="${esc(r.id)}"><div class="rider-name">${esc(r.name)}</div><select class="group-horse" data-rider="${esc(r.id)}"><option value="">— wybierz konia —</option>${horses.map(h=>`<option value="${esc(h.id)}">${esc(h.name)}</option>`).join('')}</select>`;box.appendChild(row)});$('groupScheduleModal').classList.add('show')}
+function groupHorseSearch(input){let select=input.parentElement.querySelector('.group-horse'),old=select.value,q=input.value.trim().toLocaleLowerCase('pl-PL');select.innerHTML='<option value="">— wybierz konia —</option>';horses.filter(h=>!q||String(h.name||'').toLocaleLowerCase('pl-PL').includes(q)).forEach(h=>select.add(new Option(h.name,h.id)));if([...select.options].some(o=>o.value===old))select.value=old}
+function openGroupSchedule(id){let g=groups.find(x=>x.id===id);if(!g)return;if(!(g.members||[]).length)return alert('Ta grupa nie ma jeszcze jeźdźców.');$('groupScheduleId').value=id;$('groupScheduleTitle').textContent='📅 '+(g.name||'Grupa')+' — dodaj do grafiku';$('groupScheduleDate').value=nextDateForWeekday(g.day);$('groupScheduleTime').value=normalizeTime(g.time);let ins=$('groupScheduleInstructor');ins.innerHTML='<option value="">Wybierz instruktora</option>';instructors.forEach(i=>ins.add(new Option(i.name,i.id)));ins.value=g.instructor||'';$('groupScheduleFixed').value='true';let box=$('groupScheduleMembers');box.innerHTML='';(g.members||[]).forEach(riderId=>{let r=riders.find(x=>x.id===riderId);if(!r)return;let row=document.createElement('div');row.className='group-schedule-row';row.innerHTML=`<input class="group-going" type="checkbox" checked data-rider="${esc(r.id)}"><div class="rider-name">${esc(r.name)}</div><div class="group-horse-tools"><input class="group-horse-search" type="search" placeholder="🔎 Wpisz imię konia…" oninput="groupHorseSearch(this)"><select class="group-horse" data-rider="${esc(r.id)}"><option value="">— wybierz konia —</option>${horses.map(h=>`<option value="${esc(h.id)}">${esc(h.name)}</option>`).join('')}</select></div>`;box.appendChild(row)});$('groupScheduleModal').classList.add('show')}
 function closeGroupSchedule(){$('groupScheduleModal').classList.remove('show')}
 async function saveWholeGroup(){let g=groups.find(x=>x.id===$('groupScheduleId').value);if(!g)return;let date=$('groupScheduleDate').value,time=normalizeTime(g.time),instructor=$('groupScheduleInstructor').value,fixed=$('groupScheduleFixed').value==='true';if(!date||!instructor)return alert('Wybierz datę i instruktora.');let rows=[...document.querySelectorAll('#groupScheduleMembers .group-schedule-row')].filter(row=>row.querySelector('.group-going').checked);if(!rows.length)return alert('Zaznacz przynajmniej jedną osobę.');let selected=[];for(let row of rows){let rider=row.querySelector('.group-going').dataset.rider,horse=row.querySelector('.group-horse').value;if(!horse){let rr=riders.find(x=>x.id===rider);return alert('Wybierz konia dla: '+(rr?rr.name:'jeźdźca'));}selected.push({rider,horse})}if(new Set(selected.map(x=>x.horse)).size!==selected.length)return alert('Ten sam koń został wybrany dla dwóch osób.');let occupied=rides.filter(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time);for(let x of selected){if(occupied.some(r=>r.horse===x.horse))return alert('Jeden z wybranych koni jest już zajęty.');if(occupied.some(r=>r.rider===x.rider))return alert('Jeden z jeźdźców ma już jazdę o tej godzinie.')}let newRides=[];selected.forEach(x=>{let passId='',price=0,ap=activePasses(x.rider,date);if(ap.length){let p=ap[0];p.used=Number(p.used||0)+1;passId=p.id}newRides.push({id:uid(),date,time,type:'grupowa',rider:x.rider,horse:x.horse,instructor,group:g.id,fixed,price,passId})});rides.push(...newRides);renderAll();closeGroupSchedule();await saveAll()}
 
@@ -565,16 +611,17 @@ function openRideModal(){$('rideDate').value=fmt(currentDate);$('rideRiderSearch
 function closeRideModal(){$('rideModal').classList.remove('show');if($('rideRiderResults'))$('rideRiderResults').style.display='none'}
 async function saveRide(){let type=$('rideType').value,date=$('rideDate').value,time=$('rideTime').value,rider=$('rideRider').value,horse=$('rideHorse').value,instructor=$('rideInstructor').value,group=$('rideGroup').value,fixed=$('rideFixed').value==='true';if(!date||!time||!rider||!horse||!instructor)return alert('Uzupełnij datę, godzinę, jeźdźca, konia i instruktora.');if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.horse===horse&&(r.status||'planned')!=='rescheduled')){let h=horses.find(x=>x.id===horse);return alert('Koń '+(h?h.name:'')+' jest już zajęty o tej godzinie.')}if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.rider===rider&&(r.status||'planned')!=='rescheduled'))return alert('Ten jeździec ma już jazdę o tej godzinie.');let choice=$('ridePass').value,passId='',price=Number($('rideCustomPrice').value||0);if(choice==='__new4'||choice==='__new5'){let total=choice==='__new4'?4:5;let p={id:uid(),rider,total,used:0,start:date,end:$('rideNewPassEnd').value||lastDayOfMonth(date),price:Number($('rideNewPassPrice').value||0),paymentStatus:$('rideNewPassPayment').value||'unpaid'};passes.push(p);passId=p.id;p.used=1;price=0}else if(choice){let p=passes.find(x=>x.id===choice);if(!p)return alert('Wybrany karnet nie istnieje.');if(Number(p.used)>=Number(p.total))return alert('Ten karnet jest już wykorzystany.');p.used=Number(p.used||0)+1;passId=p.id;price=0}rides.push({id:uid(),date,time,type,rider,horse,instructor,group,fixed,price,passId,status:'planned'});closeRideModal();renderAll();await saveAll()}
 function rescheduleMonthKey(r){return normalizeDate(r.date).slice(0,7)}
+async function resetRideStatus(id){
+  let r=rides.find(x=>x.id===id);if(!r)return;
+  r.status='planned';
+  removeRideStatusOverride(id);
+  persistLocal(true);
+  renderAll();
+  await saveAll();
+}
 async function markRideCompleted(id){let r=rides.find(x=>x.id===id);if(!r)return;r.status='completed';setRideStatusOverride(id,'completed');persistLocal(true);renderAll();await saveAll()}
 async function markRideNoShow(id){let r=rides.find(x=>x.id===id);if(!r)return;if(!confirm('Oznaczyć jako nieobecność bez odwołania? Jeśli jazda jest z karnetu, pozostanie wykorzystana.'))return;r.status='noshow';setRideStatusOverride(id,'noshow');persistLocal(true);renderAll();await saveAll()}
 async function rescheduleRide(id){let r=rides.find(x=>x.id===id);if(!r)return;let month=rescheduleMonthKey(r);if(r.passId){let already=rides.some(x=>x.id!==id&&x.rider===r.rider&&x.status==='rescheduled'&&x.rescheduleMonth===month);if(already)return alert('Ten jeździec wykorzystał już jedno przełożenie z karnetu w tym miesiącu.');let p=passes.find(x=>x.id===r.passId);if(p&&Number(p.used)>0)p.used=Number(p.used)-1}if(!confirm('Oznaczyć jazdę jako przełożoną? Termin przestanie zużywać jazdę z karnetu. Nowy termin dodasz jako nową jazdę.'))return;r.status='rescheduled';r.rescheduleMonth=month;setRideStatusOverride(id,'rescheduled');persistLocal(true);renderAll();await saveAll()}
-async function resetRideStatus(id){
-  let r=rides.find(x=>x.id===id);if(!r)return;
-  let old=r.status||'planned';if(old==='planned')return;
-  if(!confirm('Cofnąć status tej jazdy do „Planowana”?'))return;
-  if(old==='rescheduled'&&r.passId){let p=passes.find(x=>x.id===r.passId);if(p)p.used=Math.min(Number(p.total)||0,Number(p.used||0)+1)}
-  r.status='planned';r.rescheduleMonth='';setRideStatusOverride(id,'planned');persistLocal(true);renderAll();await saveAll();
-}
 async function deleteRide(id){let r=rides.find(x=>x.id===id);if(!r||!confirm('Usunąć tę jazdę?'))return;if(r.passId&&r.status!=='rescheduled'){let p=passes.find(x=>x.id===r.passId);if(p&&Number(p.used)>0)p.used=Number(p.used)-1}rides=rides.filter(x=>x.id!==id);removeRideStatusOverride(id);renderAll();await saveAll()}
 function rideStatusBadge(r){let s=r.status||'planned';return s==='completed'?'<span class="badge green">ODBYTA</span>':s==='rescheduled'?'<span class="badge blue">PRZEŁOŻONA</span>':s==='noshow'?'<span class="badge red">NIEOBECNOŚĆ — PRZEPADA</span>':'<span class="badge orange">PLANOWANA</span>'}
 function renderSchedule(){let head=$('scheduleHead'),body=$('scheduleBody');head.innerHTML='';body.innerHTML='';let start=monday(currentDate),hr='<tr><th>Godz.</th>';for(let d=0;d<7;d++){let dt=addDays(start,d);hr+=`<th>${dayName(dt)}<br><span class="muted">${niceDate(dt)}</span></th>`}head.innerHTML=hr+'</tr>';for(let h=7;h<=20;h++)for(let m of [0,30]){let time=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'),tr=document.createElement('tr');tr.innerHTML=`<td>${time}</td>`;for(let d=0;d<7;d++){let ds=fmt(addDays(start,d)),td=document.createElement('td');rides.filter(r=>normalizeDate(r.date)===ds&&normalizeTime(r.time)===time).forEach(r=>{let rr=riders.find(x=>x.id===r.rider),hh=horses.find(x=>x.id===r.horse),ii=instructors.find(x=>x.id===r.instructor),gg=groups.find(x=>x.id===r.group),div=document.createElement('div');div.className='ride '+rideClass(r.type);let actions=(r.status||'planned')==='planned'?`<button onclick="markRideCompleted('${r.id}')">✓ Odbyta</button><button onclick="rescheduleRide('${r.id}')">↪ Przełóż</button><button onclick="markRideNoShow('${r.id}')">🚫 Nieobecność</button>`:`<button class="gray" onclick="resetRideStatus('${r.id}')">↶ Cofnij status</button>`;div.innerHTML=`<b>${esc(rr?rr.name:'Jeździec')}</b><small>${rideLabel(r.type)}${gg?' • '+esc(gg.name):''}</small><small>🐴 ${esc(hh?hh.name:'')}</small><small>🧑‍🏫 ${esc(ii?ii.name:'')}</small><small>💰 ${Number(r.price||0)} zł${r.passId?' • karnet':''}</small>${rideStatusBadge(r)}${r.fixed?'<span class="badge">STAŁA</span>':''}${actions}<button onclick="deleteRide('${r.id}')">Usuń</button>`;td.appendChild(div)});tr.appendChild(td)}body.appendChild(tr)}}
