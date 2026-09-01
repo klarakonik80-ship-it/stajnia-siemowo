@@ -34,6 +34,21 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
 .quick-results{margin-top:6px;border:1px solid #ddd;border-radius:10px;overflow:hidden;background:#fff;display:none;max-height:220px;overflow-y:auto}
 .quick-result{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #eee;border-radius:0;background:#fff;color:#222;padding:10px 12px;font-size:14px}
 .quick-result:last-child{border-bottom:0}.quick-result:hover{background:#f2f6ff}.quick-empty{padding:10px 12px;color:#777;font-size:13px}
+
+.group-list{display:flex;flex-direction:column;gap:18px}
+.group-day-section{display:flex;flex-direction:column;gap:10px}
+.group-day-title{font-size:20px;font-weight:800;color:#1565c0;padding:4px 2px 2px;border-bottom:2px solid #e8eef7}
+.group-card{border:1px solid #dfe4ea;border-left:5px solid #1565c0;border-radius:16px;padding:14px;background:#fff;box-shadow:0 2px 8px #0000000d}
+.group-card-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.group-card-main{display:flex;gap:12px;align-items:flex-start;min-width:0;flex:1}
+.group-time-badge{flex:0 0 auto;background:#e8f2ff;color:#1565c0;border-radius:12px;padding:8px 11px;font-weight:800;font-size:18px}
+.group-card-name{font-size:18px;font-weight:800;margin-bottom:4px}.group-card-instructor{color:#555;margin-bottom:6px}
+.group-count{display:inline-block;border-radius:999px;padding:5px 9px;font-size:13px;font-weight:800;background:#e8f5e9;color:#1b5e20}
+.group-count.full{background:#fff0f0;color:#b71c1c}
+.group-members{margin-top:10px;padding-top:10px;border-top:1px solid #eee;line-height:1.45}
+.group-members b{display:block;margin-bottom:4px}.group-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.group-card-actions button{padding:9px 11px;font-size:14px}
+@media(max-width:700px){.group-list{gap:14px}.group-day-title{font-size:22px}.group-card{padding:13px}.group-card-top{display:block}.group-card-main{display:grid;grid-template-columns:auto 1fr;gap:10px}.group-time-badge{font-size:20px}.group-card-actions{display:grid;grid-template-columns:1fr 1fr}.group-card-actions button{width:100%;font-size:16px}.group-members{font-size:16px}.group-card-name{font-size:20px}}
 @media(max-width:700px){
  .grid2,.grid3{grid-template-columns:1fr}.table-scroll{overflow:visible}.table-scroll table{display:block;width:100%}.table-scroll thead{display:none}
  .table-scroll tbody,.table-scroll tr,.table-scroll td{display:block;width:100%}.table-scroll tr{border:1px solid #ddd;border-radius:12px;margin:0 0 12px;padding:8px;background:#fff}
@@ -105,7 +120,7 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empt
       <div id="groupRiderResults" class="quick-results"></div>
       <div class="inline-note">Kliknij osobę — zostanie dodana do pierwszego wolnego miejsca.</div>
       <div style="margin-top:12px"><label>Jeźdźcy w grupie — maksymalnie 6</label><div id="groupMembers"></div></div>
-    </div><div class="actions"><button id="groupSaveBtn" class="green" onclick="saveGroup()">＋ Zapisz grupę</button><button id="groupCancelBtn" class="gray" style="display:none" onclick="cancelGroupEdit()">Anuluj edycję</button></div></div><div class="card table-scroll"><table><thead><tr><th>Grupa</th><th>Dzień</th><th>Godzina</th><th>Instruktor</th><th>Jeźdźcy</th><th>Akcje</th></tr></thead><tbody id="groupsTable"></tbody></table></div></section>
+    </div><div class="actions"><button id="groupSaveBtn" class="green" onclick="saveGroup()">＋ Zapisz grupę</button><button id="groupCancelBtn" class="gray" style="display:none" onclick="cancelGroupEdit()">Anuluj edycję</button></div></div><div class="card"><div id="groupsTable" class="group-list"></div></div></section>
 <section id="konie" class="page"><div class="card"><h2>🐴 Konie</h2><div class="grid2"><div><label>Imię konia</label><input id="horseName"></div><div><label>Typ</label><select id="horseType"><option>Koń szkółkowy</option><option>Koń sportowy</option><option>Koń prywatny</option><option>Koń do hipoterapii</option></select></div></div><div class="actions"><button class="green" onclick="addHorse()">＋ Dodaj konia</button></div></div><div class="card table-scroll"><table><thead><tr><th>Koń</th><th>Typ</th><th>Akcje</th></tr></thead><tbody id="horsesTable"></tbody></table></div></section>
 <section id="instruktorzy" class="page"><div class="card"><h2>🧑‍🏫 Instruktorzy</h2><div class="grid2"><div><label>Imię i nazwisko</label><input id="instructorName"></div><div><label>Specjalizacja</label><select id="instructorType"><option>Jazda rekreacyjna</option><option>Sport</option><option>Lonża</option><option>Hipoterapia</option><option>Wszystkie</option></select></div></div><div class="actions"><button class="green" onclick="addInstructor()">＋ Dodaj instruktora</button></div></div><div class="card table-scroll"><table><thead><tr><th>Instruktor</th><th>Specjalizacja</th><th>Odbyte w tym miesiącu</th><th>Odbyte łącznie</th><th>Akcje</th></tr></thead><tbody id="instructorsTable"></tbody></table></div></section>
 </main>
@@ -406,7 +421,21 @@ async function saveGroupAttendance(){
   persistLocal(true);renderAll();await saveAll();closeGroupAttendance();alert('Lista obecności zapisana.');
 }
 
-function renderGroups(){let days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];let sortedGroups=groups.slice().sort((a,b)=>{let da=Number(a.day),db=Number(b.day);let oa=da===0?7:da,ob=db===0?7:db;if(oa!==ob)return oa-ob;return normalizeTime(a.time).localeCompare(normalizeTime(b.time))});$('groupsTable').innerHTML=sortedGroups.length?sortedGroups.map(g=>{let ins=instructors.find(i=>i.id===g.instructor),names=(g.members||[]).map(id=>(riders.find(r=>r.id===id)||{}).name).filter(Boolean).join(', ');return`<tr><td><b>${esc(g.name)}</b></td><td>${days[g.day]}</td><td>${esc(normalizeTime(g.time))}</td><td>${esc(ins?ins.name:'')}</td><td>${esc(names)}</td><td><div class="actions"><button class="green" onclick="openGroupSchedule('${g.id}')">📅 Dodaj do grafiku</button><button class="blue" onclick="openGroupAttendance('${g.id}')">✓ Obecność</button><button class="gray" onclick="editGroup('${g.id}')">Edytuj</button><button class="red" onclick="deleteGroup('${g.id}')">Usuń</button></div></td></tr>`}).join(''):'<tr><td colspan="6" class="empty">Brak grup.</td></tr>'}
+function renderGroups(){
+  let days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
+  let sortedGroups=groups.slice().sort((a,b)=>{let da=Number(a.day),db=Number(b.day);let oa=da===0?7:da,ob=db===0?7:db;if(oa!==ob)return oa-ob;return normalizeTime(a.time).localeCompare(normalizeTime(b.time))});
+  let box=$('groupsTable');
+  if(!sortedGroups.length){box.innerHTML='<div class="empty">Brak grup.</div>';return}
+  let byDay={};sortedGroups.forEach(g=>{let d=Number(g.day);(byDay[d]||(byDay[d]=[])).push(g)});
+  let order=[1,2,3,4,5,6,0];
+  box.innerHTML=order.filter(d=>byDay[d]?.length).map(d=>`<div class="group-day-section"><div class="group-day-title">📅 ${days[d]}</div>${byDay[d].map(g=>{
+    let ins=instructors.find(i=>i.id===g.instructor);
+    let memberNames=(g.members||[]).map(id=>(riders.find(r=>r.id===id)||{}).name).filter(Boolean);
+    let count=memberNames.length,free=Math.max(0,6-count),full=count>=6;
+    let countText=full?`👥 ${count}/6 — PEŁNA`:`👥 ${count}/6 — ${free} ${free===1?'wolne miejsce':'wolne miejsca'}`;
+    return `<div class="group-card"><div class="group-card-top"><div class="group-card-main"><div class="group-time-badge">${esc(normalizeTime(g.time))}</div><div><div class="group-card-name">${esc(g.name)}</div><div class="group-card-instructor">🧑‍🏫 ${esc(ins?ins.name:'Brak instruktora')}</div><span class="group-count ${full?'full':''}">${countText}</span></div></div></div><div class="group-members"><b>Jeźdźcy:</b>${memberNames.length?esc(memberNames.join(', ')):'<span class="muted"> Brak osób w grupie</span>'}</div><div class="group-card-actions"><button class="green" onclick="openGroupSchedule('${g.id}')">📅 Dodaj do grafiku</button><button class="blue" onclick="openGroupAttendance('${g.id}')">✓ Obecność</button><button class="gray" onclick="editGroup('${g.id}')">Edytuj</button><button class="red" onclick="deleteGroup('${g.id}')">Usuń</button></div></div>`
+  }).join('')}</div>`).join('')
+}
 async function saveGroup(){let name=$('groupName').value.trim();if(!name)return alert('Wpisz nazwę grupy.');let members=[...new Set(currentGroupMemberValues().filter(Boolean))];let data={name,day:Number($('groupDay').value),time:normalizeTime($('groupTime').value),instructor:$('groupInstructor').value,members};let editId=$('groupEditId').value;if(editId){let g=groups.find(x=>x.id===editId);if(g)Object.assign(g,data)}else groups.push({id:uid(),...data});cancelGroupEdit();renderAll();await saveAll()}
 function editGroup(id){let g=groups.find(x=>x.id===id);if(!g)return;$('groupEditId').value=id;$('groupName').value=g.name||'';$('groupDay').value=String(Number(g.day));$('groupTime').value=normalizeTime(g.time);$('groupInstructor').value=g.instructor||'';createMemberSelectors(g.members||[]);$('groupSaveBtn').textContent='💾 Zapisz zmiany';$('groupCancelBtn').style.display='inline-block';showPage('grupy');window.scrollTo({top:0,behavior:'smooth'})}
 function cancelGroupEdit(){if($('groupRiderSearch'))$('groupRiderSearch').value='';if($('groupRiderResults'))$('groupRiderResults').style.display='none';$('groupEditId').value='';$('groupName').value='';$('groupDay').value='1';$('groupTime').value='07:00';$('groupInstructor').value='';createMemberSelectors([]);$('groupSaveBtn').textContent='＋ Zapisz grupę';$('groupCancelBtn').style.display='none'}
