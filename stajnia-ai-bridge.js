@@ -1,0 +1,92 @@
+/* Stajnia Siemowo — bezpieczny most pomiędzy rozmową AI a istniejącym managerem.
+ * Dołącz po głównym skrypcie istniejącej aplikacji. Klucz API nigdy nie jest tu przechowywany.
+ * Wersja próbna: zapisy wyłącznie po kliknięciu POTWIERDZAM, nie samym poleceniu modelu.
+ */
+(() => {
+  'use strict';
+  if (document.getElementById('siemowoAiButton')) return;
+  const WORKER = 'https://stajnia-siemowo-ai.klarakonik80.workers.dev';
+  const id = x => document.getElementById(x);
+  const normalize = x => String(x || '').toLocaleLowerCase('pl-PL').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g,'l').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  const tell = x => {id('siemowoAiStatus').textContent=x;};
+  const cleanText = x => String(x||'').trim().slice(0,400);
+  const syncReady = () => navigator.onLine && !hasPending() && id('syncDot')?.classList.contains('ok');
+  let pc=null, stream=null, dc=null, timer=null, pending=null, busy=false;
+  const processed = new Set();
+  const theme=document.createElement('style');
+  theme.textContent=`#siemowoAiButton{background:#14532d;color:#fff;border:0;border-radius:10px;padding:10px 15px;cursor:pointer;font-weight:700}#siemowoAiPanel{display:none;position:fixed;z-index:9999;right:12px;bottom:12px;width:min(430px,calc(100vw - 24px));max-height:90vh;overflow:auto;border-radius:18px;box-shadow:0 8px 60px #0006;border:1px solid #d1d5db;background:#fff;padding:17px;color:#1b3326;font-size:15px}#siemowoAiPanel button{cursor:pointer;border:0;border-radius:10px;padding:11px 12px;background:#166534;color:#fff}#siemowoAiPanel button:disabled{opacity:.5;cursor:not-allowed}#siemowoAiPanel input:not([type=checkbox]){width:100%;padding:12px;border-radius:9px;border:1px solid #bbb;min-width:0;font-size:15px}#siemowoAiPanel .airow{display:flex;gap:8px;margin:9px 0}#siemowoAiPanel .airow button{flex:1}#siemowoAiPanel p{line-height:1.5}#siemowoAiPending{display:none;background:#fff8e7;border:1px solid #e8cf96;border-radius:12px;padding:12px;white-space:pre-line}#siemowoAiStatus{background:#f1f5f9;border-radius:10px;padding:12px;white-space:pre-line}#siemowoAiLog{max-height:90px;overflow:auto;font-size:13px;color:#555;white-space:pre-wrap}#siemowoAiPanel .secondary{background:#64748b}`;
+  document.head.appendChild(theme);
+  const btn=document.createElement('button');btn.id='siemowoAiButton';btn.textContent='🎙️ Hej, Stajnia AI';
+  (document.querySelector('header .sync')||document.querySelector('header')||document.body).appendChild(btn);
+  const panel=document.createElement('aside');panel.id='siemowoAiPanel';
+  panel.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong style="font-size:20px">🐴 Hej, Stajnia! AI</strong><button class="secondary" id="siemowoAiClose" aria-label="Zamknij">✕</button></div><p>Rozmawiaj głosem i przygotowuj zapisy do prawdziwego grafiku. <b>Żadna jazda nie zapisze się bez Twojego potwierdzenia na ekranie.</b></p><label for="siemowoAiSecret">Prywatne hasło Cloudflare</label><input type="password" id="siemowoAiSecret" autocomplete="off" spellcheck="false"><div class="airow"><button id="siemowoAiStart">🎙️ Rozpocznij rozmowę</button><button id="siemowoAiStop" class="secondary" disabled>⏹ Zakończ</button></div><div id="siemowoAiStatus" role="status" aria-live="polite">Gotowe. Sprawdź, czy grafik jest zsynchronizowany.</div><audio id="siemowoAiAudio" autoplay playsinline controls style="width:100%;margin-top:10px"></audio><div class="airow"><input id="siemowoAiText" placeholder="Lub napisz polecenie…" maxlength="400"><button id="siemowoAiSend" style="flex:0 0 auto" disabled>Wyślij</button></div><div id="siemowoAiPending" role="status"></div><label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-top:12px"><input id="siemowoAiEnableWrites" type="checkbox" style="width:auto;min-width:18px;height:18px;flex:0 0 auto"><span>Włącz prawdziwe zapisy do grafiku (domyślnie wyłączone)</span></label><div class="airow"><button id="siemowoAiConfirm" style="display:none;background:#166534">✅ Potwierdzam zapis</button><button id="siemowoAiCancel" class="secondary" style="display:none">Anuluj</button></div><div id="siemowoAiLog"></div><p style="color:#64748b;font-size:12px">Nie wpisuj tutaj klucza OpenAI. Hasło nie jest zapisywane w przeglądarce. Rozmowy mogą naliczać opłaty API. Próba trwa maks. 3 minuty.</p>`;
+  document.body.appendChild(panel);
+  const log = x => {const d=document.createElement('div');d.textContent=x;id('siemowoAiLog').appendChild(d);while(id('siemowoAiLog').children.length>8)id('siemowoAiLog').firstChild.remove();};
+  function stop(){if(timer){clearTimeout(timer);timer=null;}if(dc){try{dc.close()}catch(_){ }dc=null;}if(pc){try{pc.close()}catch(_){ }pc=null;}if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}id('siemowoAiAudio').srcObject=null;busy=false;id('siemowoAiStart').disabled=false;id('siemowoAiStop').disabled=true;id('siemowoAiSend').disabled=true;}
+  function send(event){if(dc?.readyState==='open')dc.send(JSON.stringify(event));}
+  function sayToAi(s){send({type:'conversation.item.create',item:{type:'message',role:'user',content:[{type:'input_text',text:s}]}});send({type:'response.create'});}
+  function showPending(){let box=id('siemowoAiPending');if(!pending){box.style.display='none';id('siemowoAiConfirm').style.display='none';id('siemowoAiCancel').style.display='none';return;}box.textContent=pending.description+'\nZatwierdź tylko po sprawdzeniu szczegółów.';box.style.display='block';id('siemowoAiConfirm').style.display='';id('siemowoAiCancel').style.display='';}
+  const props=(p,required=[])=>({type:'object',properties:p,required,additionalProperties:false});
+  const tools=[
+    {type:'function',name:'znajdz_w_stajni',description:'Wyszukuje jeźdźców, konie lub instruktorów po nazwie w aktualnie wczytanym grafiku. Nie pobiera telefonów.',parameters:props({kategoria:{type:'string',enum:['jezdzcy','konie','instruktorzy']},fraza:{type:'string'}},['kategoria','fraza'])},
+    {type:'function',name:'sprawdz_grafik',description:'Zwraca jazdy zaplanowane w danym dniu, opcjonalnie o konkretnej godzinie.',parameters:props({data:{type:'string',description:'YYYY-MM-DD'},godzina:{type:'string',description:'HH:MM lub pusty ciąg'}},['data'])},
+    {type:'function',name:'pozostale_karnety',description:'Sprawdza aktywne karnety konkretnego jeźdźca.',parameters:props({jezdziec:{type:'string'}},['jezdziec'])},
+    {type:'function',name:'przygotuj_jazde',description:'Tylko przygotowuje propozycję jazdy; NIE zapisuje jej bez zatwierdzenia przez właścicielkę w aplikacji.',parameters:props({data:{type:'string',description:'YYYY-MM-DD'},godzina:{type:'string',description:'HH:MM'},jezdziec:{type:'string'},kon:{type:'string'},instruktor:{type:'string'},rodzaj:{type:'string',enum:['indywidualna','grupowa','lonza','oprowadzanka','hipoterapia','sport']}},['data','godzina','jezdziec','kon','instruktor'])},
+    {type:'function',name:'przygotuj_jezdzca',description:'Przygotowuje nowego jeźdźca bez zapisu; wymaga kliknięcia potwierdzenia.',parameters:props({imie_nazwisko:{type:'string'},poziom:{type:'string'}},['imie_nazwisko'])}
+  ];
+  function matchUnique(list,q,what){const n=normalize(q);if(!n)return {error:'Nie podano: '+what};let exact=list.filter(x=>normalize(x.name)===n);if(exact.length===1)return {value:exact[0]};const loose=list.filter(x=>normalize(x.name).includes(n));if(loose.length===1)return {value:loose[0]};if(loose.length>1)return {error:'Niejednoznaczne '+what+': '+loose.slice(0,6).map(x=>x.name).join(', ')};return {error:'Nie znaleziono '+what+' „'+cleanText(q)+'”'};}
+  function checkCurrent(){if(!syncReady())return {error:'Brak potwierdzonej synchronizacji z Arkuszem Google. Nie zapiszę danych, dopóki grafik się nie zsynchronizuje.'};return null;}
+  function makeRide(a){const c=checkCurrent();if(c)return c;const rider=matchUnique(riders,a.jezdziec,'jeźdźca'),horse=matchUnique(horses,a.kon,'konia'),ins=matchUnique(instructors,a.instruktor,'instruktora');for(const x of [rider,horse,ins])if(x.error)return x;const date=String(a.data||''),time=String(a.godzina||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))return {error:'Podaj pełną datę YYYY-MM-DD i godzinę HH:MM.'};const d=new Date(date+'T12:00:00');if(!Number.isFinite(d.valueOf())||fmt(d)!==date)return {error:'Nieprawidłowa data'};if(![...id('rideTime').options].some(x=>x.value===time))return {error:'Godzina poza grafikiem. Wybierz pełną godzinę lub półgodzinę od 07:00 do 20:30.'};if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.horse===horse.value.id&&(r.status||'planned')!=='rescheduled'))return {error:'Koń jest już zajęty w tym terminie.'};if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.rider===rider.value.id&&(r.status||'planned')!=='rescheduled'))return {error:'Jeździec ma już jazdę w tym terminie.'};const kind=['indywidualna','grupowa','lonza','oprowadzanka','hipoterapia','sport'].includes(a.rodzaj)?a.rodzaj:'indywidualna';pending={type:'ride',date,time,riderId:rider.value.id,horseId:horse.value.id,instructorId:ins.value.id,kind,description:`JAZDA: ${rider.value.name}\nData: ${date}, godz.: ${time}\nKoń: ${horse.value.name}\nInstruktor: ${ins.value.name}\nRodzaj: ${kind}\nRozliczenie: bez karnetu, wg cennika (${kind==='grupowa'?0:Number(priceSettings[kind]||0)} zł)`};showPending();return {ok:true,informacja:pending.description,instrukcja:'Poproś użytkowniczkę o kliknięcie przycisku Potwierdzam zapis. Nie twierdź, że zapis już nastąpił.'};}
+  function makeRider(a){const c=checkCurrent();if(c)return c;const name=cleanText(a.imie_nazwisko);if(!name||name.split(/\s+/).length<2)return {error:'Podaj imię i nazwisko nowego jeźdźca.'};const existing=riders.find(x=>normalize(x.name)===normalize(name));if(existing)return {error:'Jeździec o tym imieniu i nazwisku już istnieje.'};pending={type:'rider',name,level:['Początkujący','Średni','Zaawansowany'].includes(a.poziom)?a.poziom:'Początkujący',description:`NOWY JEŹDZIEC: ${name}\nPoziom: ${['Początkujący','Średni','Zaawansowany'].includes(a.poziom)?a.poziom:'Początkujący'}\nTelefon: nie podano`};showPending();return {ok:true,informacja:pending.description,instrukcja:'Poproś o kliknięcie Potwierdzam zapis. Nie twierdź, że zapis już nastąpił.'};}
+  async function runTool(name,args){const a=args||{};
+    if(name==='znajdz_w_stajni'){const li=a.kategoria==='jezdzcy'?riders:a.kategoria==='konie'?horses:instructors;return {nazwy:li.filter(x=>normalize(x.name).includes(normalize(a.fraza))).slice(0,12).map(x=>x.name)};}
+    if(name==='sprawdz_grafik'){const list=rides.filter(x=>normalizeDate(x.date)===a.data&&(!a.godzina||normalizeTime(x.time)===normalizeTime(a.godzina))).slice(0,40);return {liczba:list.length,jazdy:list.map(x=>({godzina:normalizeTime(x.time),jezdziec:riders.find(t=>t.id===x.rider)?.name||'?',kon:horses.find(t=>t.id===x.horse)?.name||'?',instruktor:instructors.find(t=>t.id===x.instructor)?.name||'?'}))};}
+    if(name==='pozostale_karnety'){const r=matchUnique(riders,a.jezdziec,'jeźdźca');if(r.error)return r;return {jezdziec:r.value.name,karnety:passes.filter(p=>p.rider===r.value.id&&passState(p).active).map(p=>({pozostalo:Math.max(0,Number(p.total||0)-Number(p.used||0)),wazny_do:p.end||'',status_platnosci:p.paymentStatus||'paid'}))};}
+    if(name==='przygotuj_jazde')return makeRide(a);
+    if(name==='przygotuj_jezdzca')return makeRider(a);
+    return {error:'Nieznane polecenie'};
+  }
+  async function handleCall(c){if(!c?.call_id||processed.has(c.call_id))return;processed.add(c.call_id);let output;try{output=await runTool(c.name,JSON.parse(c.arguments||'{}'));}catch(err){output={error:'Wykonanie nie powiodło się: '+String(err?.message||err)};}send({type:'conversation.item.create',item:{type:'function_call_output',call_id:c.call_id,output:JSON.stringify(output)}});send({type:'response.create'});}
+  id('siemowoAiConfirm').addEventListener('click',async()=>{
+    if(!pending)return;if(!id('siemowoAiEnableWrites').checked){tell('To tylko próba — nie zapisano niczego. Po sprawdzeniu działania zaznacz Włącz prawdziwe zapisy, jeśli chcesz zapisać tę propozycję.');return;}const p=pending;id('siemowoAiConfirm').disabled=true;try{
+      await loadAll(true);const check=checkCurrent();if(check)throw new Error(check.error);
+      if(p.type==='ride'){
+        if(!riders.some(x=>x.id===p.riderId)||!horses.some(x=>x.id===p.horseId)||!instructors.some(x=>x.id===p.instructorId))throw new Error('Zmieniły się dane jeźdźca, konia lub instruktora. Przygotuj zapis ponownie.');
+        if(rides.some(r=>normalizeDate(r.date)===p.date&&normalizeTime(r.time)===p.time&&(r.horse===p.horseId||r.rider===p.riderId)&&(r.status||'planned')!=='rescheduled'))throw new Error('Termin został już zajęty. Przygotuj inny.');
+        const before=rides.length;openRideModal();id('rideDate').value=p.date;id('rideTime').value=p.time;id('rideType').value=p.kind;rideTypeChanged();id('rideRider').value=p.riderId;rideRiderChanged();id('rideHorse').value=p.horseId;id('rideInstructor').value=p.instructorId;id('ridePass').value='';id('rideCustomPrice').value=p.kind==='grupowa'?0:Number(priceSettings[p.kind]||0);await saveRide();if(rides.length<=before)throw new Error('Nie udało się utworzyć jazdy.');
+      }else if(p.type==='rider'){
+        if(riders.some(x=>normalize(x.name)===normalize(p.name)))throw new Error('Taki jeździec już istnieje.');
+        const before=riders.length;id('riderName').value=p.name;id('riderLevel').value=p.level;id('riderPhone').value='';id('riderEditId').value='';await addRider();if(riders.length<=before)throw new Error('Nie udało się dodać jeźdźca.');
+      }
+      pending=null;showPending();tell('✅ Zapis wysłany do Arkusza Google. Sprawdź, czy grafik zakończył synchronizację.');log('Potwierdzono: '+p.description.replace(/\n/g,' • '));if(dc?.readyState==='open')sayToAi('Właścicielka potwierdziła zapis w aplikacji. Zmianę wysłano do synchronizacji. Nie twierdź, że serwer ją ostatecznie potwierdził.');
+    }catch(e){tell('Nie zapisano: '+String(e.message||e));}finally{id('siemowoAiConfirm').disabled=false;}
+  });
+  id('siemowoAiCancel').addEventListener('click',()=>{pending=null;showPending();tell('Propozycja anulowana.');});
+  id('siemowoAiText').addEventListener('keydown',e=>{if(e.key==='Enter')id('siemowoAiSend').click();});
+  id('siemowoAiSend').addEventListener('click',()=>{const text=cleanText(id('siemowoAiText').value);if(!text||dc?.readyState!=='open')return;id('siemowoAiText').value='';log('Ty: '+text);sayToAi(text);});
+  id('siemowoAiStop').addEventListener('click',()=>{stop();tell('Rozmowa zakończona.');});
+  id('siemowoAiClose').addEventListener('click',()=>{stop();id('siemowoAiPanel').style.display='none';});
+  btn.addEventListener('click',()=>{id('siemowoAiPanel').style.display='block';});
+  id('siemowoAiStart').addEventListener('click',async()=>{
+    if(busy)return;const password=id('siemowoAiSecret').value;
+    if(password.length<20){tell('Wpisz hasło dostępu z Cloudflare (min. 20 znaków).');return;}
+    if(!syncReady()){tell('Najpierw poczekaj na synchronizację grafiku z Arkuszem Google.');return;}
+    busy=true;id('siemowoAiStart').disabled=true;processed.clear();tell('Łączę się z AI…');
+    try{
+      const response=await fetch(WORKER+'/session',{method:'POST',mode:'cors',headers:{'Content-Type':'application/json','Authorization':'Bearer '+password},body:'{}',cache:'no-store'});
+      if(!response.ok){const err=await response.json().catch(()=>({}));throw new Error(err.error||('Połączenie odrzucone: '+response.status));}
+      const token=await response.json();if(!token.value)throw new Error('Brak tymczasowego klucza głosowego.');
+      if(!navigator.mediaDevices?.getUserMedia||typeof RTCPeerConnection==='undefined')throw new Error('Przeglądarka nie obsługuje rozmowy głosowej.');
+      pc=new RTCPeerConnection();pc.ontrack=evt=>{id('siemowoAiAudio').srcObject=evt.streams[0];id('siemowoAiAudio').play().catch(()=>tell('Połączono. Jeśli nie słychać głosu, naciśnij ▶.'));};
+      stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});stream.getTracks().forEach(track=>pc.addTrack(track,stream));
+      dc=pc.createDataChannel('oai-events');dc.addEventListener('open',()=>{
+        tell('🎙️ Połączono. Powiedz „Hej, Stajnia...”');id('siemowoAiStop').disabled=false;id('siemowoAiSend').disabled=false;
+        send({type:'session.update',session:{type:'realtime',tools,tool_choice:'auto',instructions:'Jesteś głosową asystentką Stajni Siemowo. Mów po polsku, naturalnie i krótko, ale pełnymi zdaniami. Dzisiejsza data lokalna to '+fmt(new Date())+'. Do informacji o grafiku, karnetach i osobach używaj funkcji. Nie wymyślaj nazw, terminów ani dostępności. Do zapisania jazdy i dodania jeźdźca użyj wyłącznie narzędzia przygotowania. Nigdy nie stwierdzaj, że coś zostało zapisane, dopóki właścicielka nie zatwierdzi propozycji przyciskiem w aplikacji. Jeśli brakuje instruktora, zapytaj. Nie pytaj o hasła ani klucze API.'}});
+        send({type:'response.create',response:{instructions:'Przywitaj się po polsku jednym zdaniem i zapytaj, w czym pomóc.'}});
+      });
+      dc.addEventListener('message',evt=>{try{const ev=JSON.parse(evt.data);if(ev.type==='response.output_item.done'&&ev.item?.type==='function_call')handleCall(ev.item);if(ev.type==='response.done')for(const item of ev.response?.output||[])if(item.type==='function_call')handleCall(item);if(ev.type==='response.output_audio_transcript.done')log('Stajnia: '+String(ev.transcript||'').slice(0,500));if(ev.type==='error')log('AI: '+String(ev.error?.message||'Błąd'));}catch(err){console.warn('AI event',err);}});
+      const offer=await pc.createOffer();await pc.setLocalDescription(offer);const ans=await fetch('https://api.openai.com/v1/realtime/calls',{method:'POST',headers:{Authorization:'Bearer '+token.value,'Content-Type':'application/sdp'},body:offer.sdp});if(!ans.ok)throw new Error('Połączenie głosowe zostało odrzucone ('+ans.status+').');await pc.setRemoteDescription({type:'answer',sdp:await ans.text()});
+      timer=setTimeout(()=>{stop();tell('Test zakończony po 3 minutach, żeby ograniczyć koszty.');},180000);
+    }catch(err){stop();tell('Nie udało się połączyć: '+String(err?.message||err)+'. Sprawdź, czy serwer Cloudflare ma wgraną wersję obsługującą połączenie z aplikacji.');}
+  });
+})();
