@@ -1,652 +1,77 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Stajnia Siemowo Manager</title>
+<meta name="theme-color" content="#166534">
+<title>Stajnia Siemowo Manager — Hej, Stajnia!</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f4f4f4;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-header{position:sticky;top:0;z-index:20;background:#fff;padding:16px;box-shadow:0 2px 10px #0002}
-h1{margin:0 0 10px;font-size:26px}.sync{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-.dot{width:10px;height:10px;border-radius:50%;background:#aaa}.dot.ok{background:#2e7d32}.dot.bad{background:#e53935}
-.muted{color:#777;font-size:13px}nav{display:flex;gap:8px;overflow:auto;padding-bottom:2px}
-button{border:0;border-radius:12px;padding:11px 14px;background:#222;color:#fff;font-size:15px;cursor:pointer}
-button.green{background:#2e7d32}button.blue{background:#1565c0}button.red{background:#e53935}button.gray{background:#777}
-main{max-width:1500px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}
-.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 3px 12px #0001}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-label{display:block;font-weight:600;margin:0 0 6px}input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;background:#fff}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#eee}.empty{text-align:center;color:#777;padding:18px}
-.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#eee;font-size:12px}.badge.green{background:#d8f5dc;color:#176b22}.badge.red{background:#ffdada;color:#9c1c1c}.badge.orange{background:#fff0cc;color:#8a5a00}.badge.blue{background:#dcecff;color:#174f8b}
-.notice{background:#fff4d6;border-radius:12px;padding:12px;margin-bottom:12px}.search-box{position:relative;margin-bottom:12px}.search-box input{padding-left:42px}.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none}
-.search-summary{margin:7px 2px 0;color:#666;font-size:13px}.schedule-wrap{overflow:auto;background:#fff;border-radius:16px;box-shadow:0 2px 10px #0001}
-.schedule{min-width:1050px}.schedule th,.schedule td{min-width:145px;height:74px;vertical-align:top}.schedule th:first-child,.schedule td:first-child{min-width:70px;width:70px}
-.schedule td:first-child{position:sticky;left:0;background:#f7f7f7;font-weight:bold;z-index:4}.ride{background:#222;color:#fff;border-radius:9px;padding:7px;margin-bottom:5px;font-size:12px}
-.ride.group{background:#315f46}.ride.longe{background:#7a5720}.ride.sport{background:#56376f}.ride.hipoterapia{background:#245a72}.ride small{display:block;opacity:.92;margin-top:2px}.ride button{padding:4px 7px;margin-top:5px;font-size:11px;background:#e53935}
-.modal{display:none;position:fixed;inset:0;background:#0008;z-index:100;padding:15px;align-items:center;justify-content:center}.modal.show{display:flex}
-.modal-box{width:100%;max-width:760px;max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px}.close{float:right;background:#777}
-.group-member{margin-bottom:7px}.group-schedule-row{display:grid;grid-template-columns:auto 1fr 1.2fr;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
-.group-schedule-row input[type="checkbox"]{width:22px;height:22px}.group-schedule-row .rider-name{font-weight:700}.pricebox{background:#eef6ff;border-radius:12px;padding:12px;margin:10px 0}
-.loading{position:fixed;right:12px;bottom:12px;background:#222;color:#fff;padding:10px 14px;border-radius:12px;z-index:200;display:none}
-.inline-note{font-size:12px;color:#666;margin-top:5px}.section-title{margin:0 0 12px}.checkbox-line{display:flex;gap:10px;align-items:flex-start;margin-top:12px}.checkbox-line input{width:22px;height:22px;margin-top:2px}
-.quick-results{margin-top:6px;border:1px solid #ddd;border-radius:10px;overflow:hidden;background:#fff;display:none;max-height:220px;overflow-y:auto}
-.quick-result{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #eee;border-radius:0;background:#fff;color:#222;padding:10px 12px;font-size:14px}
-.quick-result:last-child{border-bottom:0}.quick-result:hover{background:#f2f6ff}.quick-empty{padding:10px 12px;color:#777;font-size:13px}
-.horse-board{display:grid;grid-template-columns:1fr 1fr;gap:14px}.horse-board-box{border-radius:14px;padding:14px;background:#f7f7f7}.horse-board-box.free{background:#edf8ef}.horse-board-item{padding:8px 0;border-bottom:1px solid #ddd}.horse-board-item:last-child{border-bottom:0}.group-horse-tools{grid-column:1/-1;display:grid;grid-template-columns:1fr;gap:6px}
-
-.group-list{display:flex;flex-direction:column;gap:18px}
-.group-day-section{display:flex;flex-direction:column;gap:10px}
-.group-day-title{font-size:20px;font-weight:800;color:#1565c0;padding:4px 2px 2px;border-bottom:2px solid #e8eef7}
-.group-card{border:1px solid #dfe4ea;border-left:5px solid #1565c0;border-radius:16px;padding:14px;background:#fff;box-shadow:0 2px 8px #0000000d}
-.group-card-top{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-.group-card-main{display:flex;gap:12px;align-items:flex-start;min-width:0;flex:1}
-.group-time-badge{flex:0 0 auto;background:#e8f2ff;color:#1565c0;border-radius:12px;padding:8px 11px;font-weight:800;font-size:18px}
-.group-card-name{font-size:18px;font-weight:800;margin-bottom:4px}.group-card-instructor{color:#555;margin-bottom:6px}
-.group-count{display:inline-block;border-radius:999px;padding:5px 9px;font-size:13px;font-weight:800;background:#e8f5e9;color:#1b5e20}
-.group-count.full{background:#fff0f0;color:#b71c1c}
-.group-members{margin-top:10px;padding-top:10px;border-top:1px solid #eee;line-height:1.45}
-.group-members b{display:block;margin-bottom:4px}.group-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.group-card-actions button{padding:9px 11px;font-size:14px}
-@media(max-width:700px){.group-list{gap:14px}.group-day-title{font-size:22px}.group-card{padding:13px}.group-card-top{display:block}.group-card-main{display:grid;grid-template-columns:auto 1fr;gap:10px}.group-time-badge{font-size:20px}.group-card-actions{display:grid;grid-template-columns:1fr 1fr}.group-card-actions button{width:100%;font-size:16px}.group-members{font-size:16px}.group-card-name{font-size:20px}}
-@media(max-width:700px){
- .grid2,.grid3{grid-template-columns:1fr}.table-scroll{overflow:visible}.table-scroll table{display:block;width:100%}.table-scroll thead{display:none}
- .table-scroll tbody,.table-scroll tr,.table-scroll td{display:block;width:100%}.table-scroll tr{border:1px solid #ddd;border-radius:12px;margin:0 0 12px;padding:8px;background:#fff}
- .table-scroll td{border:0;border-bottom:1px solid #eee;padding:8px;overflow-wrap:anywhere}.table-scroll td:last-child{border-bottom:0}
- .group-schedule-row{grid-template-columns:auto 1fr}.group-schedule-row .group-horse-tools{grid-column:1/-1}.horse-board{grid-template-columns:1fr}
-}
+* {box-sizing:border-box}
+body {font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f4f4f4;color:#222;margin:0}
+main {max-width:580px;margin:16vh auto 0;padding:20px;text-align:center}
+.panel {background:#fff;padding:26px 20px;border-radius:18px;box-shadow:0 4px 24px #0001}
+p {line-height:1.55}
+button {background:#166534;color:white;border:0;border-radius:10px;padding:12px 18px;font-size:16px;cursor:pointer}
+.small {color:#666;font-size:13px}
 </style>
 </head>
 <body>
-<header>
-  <h1>🐴 Stajnia Siemowo Manager</h1>
-  <div class="sync"><span id="syncDot" class="dot"></span><span id="syncText" class="muted">Łączenie z arkuszem…</span><button class="blue" onclick="loadAll()">↻ Odśwież</button></div>
-  <nav>
-    <button onclick="showPage('start')">🏠 Start</button><button onclick="showPage('grafik')">📅 Grafik</button><button onclick="showPage('jezdzcy')">👤 Jeźdźcy</button><button onclick="showPage('karnety')">🎟️ Karnety</button><button onclick="showPage('grupy')">👥 Grupy</button><button onclick="showPage('konie')">🐴 Konie</button><button onclick="showPage('instruktorzy')">🧑‍🏫 Instruktorzy</button>
-  </nav>
-</header>
 <main>
-<section id="start" class="page active">
-  <div class="card">
-    <h2>🏠 Start — dzisiaj</h2>
-    <div id="startDate" class="muted" style="margin-bottom:12px"></div>
-    <div class="grid3">
-      <div class="card" style="margin:0"><div class="muted">Dzisiejsze jazdy</div><div id="startRideCount" style="font-size:30px;font-weight:800">0</div></div>
-      <div class="card" style="margin:0"><div class="muted">Karnety do zapłaty</div><div id="startUnpaidCount" style="font-size:30px;font-weight:800">0</div></div>
-      <div class="card" style="margin:0"><div class="muted">Karnety kończące się</div><div id="startEndingCount" style="font-size:30px;font-weight:800">0</div></div>
-    </div>
-  </div>
-  <div class="card">
-    <h3 class="section-title">📅 Dzisiejsze jazdy</h3>
-    <div id="startTodayRides"></div>
-  </div>
-  <div class="card">
-    <h3 class="section-title">🐴 Konie na dzisiaj</h3>
-    <div class="horse-board">
-      <div class="horse-board-box"><h3 style="margin-top:0">Wpisane do jazd</h3><div id="startBusyHorses"></div></div>
-      <div class="horse-board-box free"><h3 style="margin-top:0">Wolne — można zabrać</h3><div id="startFreeHorses"></div></div>
-    </div>
-  </div>
-  <div class="card">
-    <h3 class="section-title">🔔 Do ogarnięcia</h3>
-    <div id="startTasks"></div>
-  </div>
-</section>
-<section id="grafik" class="page">
-  <div class="card"><h2>📅 Grafik jazdy</h2><div class="actions"><button onclick="previousWeek()">← Poprzedni</button><button onclick="goToday()">Dziś</button><button onclick="nextWeek()">Następny →</button><button class="green" onclick="openRideModal()">＋ Dodaj jazdę</button><button class="blue" onclick="copyWeek()">🔄 Kopiuj stałe</button></div></div>
-  <div class="schedule-wrap"><table class="schedule"><thead id="scheduleHead"></thead><tbody id="scheduleBody"></tbody></table></div>
-</section>
-
-<section id="jezdzcy" class="page">
-  <div class="card"><h2>👤 Jeźdźcy</h2><input id="riderEditId" type="hidden"><div class="grid3"><div><label>Imię i nazwisko</label><input id="riderName"></div><div><label>Telefon</label><input id="riderPhone"></div><div><label>Poziom</label><select id="riderLevel"><option>Początkujący</option><option>Średniozaawansowany</option><option>Zaawansowany</option><option>Sportowy</option></select></div></div><div class="actions"><button id="riderSaveBtn" class="green" onclick="addRider()">＋ Dodaj jeźdźca</button><button id="riderCancelBtn" class="gray" style="display:none" onclick="cancelRiderEdit()">Anuluj edycję</button></div></div>
-  <div class="card"><div class="search-box"><span class="search-icon">🔎</span><input id="riderSearch" type="search" placeholder="Szukaj po imieniu, telefonie lub poziomie…" autocomplete="off" oninput="renderRiders()"></div><div id="riderSearchSummary" class="search-summary"></div></div>
-  <div class="card table-scroll"><table><thead><tr><th>Jeździec</th><th>Telefon</th><th>Poziom</th><th>Akcje</th></tr></thead><tbody id="ridersTable"></tbody></table></div>
-</section>
-
-<section id="karnety" class="page">
-  <div class="card">
-    <h2>🎟️ Karnety</h2>
-    <div class="grid3">
-      <div>
-      <label>🔎 Szybkie wyszukiwanie jeźdźca</label>
-      <input id="passRiderSearch" type="search" placeholder="Wpisz imię, nazwisko lub telefon…" autocomplete="off" oninput="filterPassRiders()" onfocus="filterPassRiders()">
-      <div id="passRiderResults" class="quick-results"></div>
-      <div class="inline-note">Kliknij osobę z wyników.</div>
-    </div>
-    <div><label>Jeździec</label><select id="passRider" onchange="passRiderChanged()"></select></div>
-      <div><label>Liczba jazd</label><select id="passTotal" onchange="passTotalChanged()"><option value="4">4 jazdy</option><option value="5">5 jazd</option></select></div>
-      <div><label>Cena karnetu (zł)</label><input id="passPrice" type="number" min="0" step="1"></div>
-      <div><label>Data rozpoczęcia</label><input id="passStart" type="date"></div>
-      <div><label>Ważny do</label><input id="passEnd" type="date"></div>
-      <div><label>Status płatności</label><select id="passPayment"><option value="paid">Zapłacony</option><option value="unpaid">Do zapłaty</option></select></div>
-    </div>
-    <div class="checkbox-line"><input id="passIncludePrevious" type="checkbox"><div><b>Zaliczyć wcześniejsze jazdy do tego karnetu</b><div class="inline-note">Przydatne, gdy karnet został kupiony w połowie miesiąca. Program przypisze wcześniejsze jazdy tego jeźdźca od daty rozpoczęcia, maksymalnie do liczby jazd w karnecie.</div></div></div>
-    <div class="actions"><button class="green" onclick="addPass()">＋ Dodaj karnet</button></div>
-  </div>
-  <div class="card">
-    <h3 class="section-title">💰 Cennik</h3>
-    <div class="grid3">
-      <div><label>Jazda pojedyncza</label><input id="price_indywidualna" type="number" min="0" step="1"></div>
-      <div><label>Lonża</label><input id="price_lonza" type="number" min="0" step="1"></div>
-      <div><label>Oprowadzanka</label><input id="price_oprowadzanka" type="number" min="0" step="1"></div>
-      <div><label>Hipoterapia</label><input id="price_hipoterapia" type="number" min="0" step="1"></div>
-      <div><label>Trening sportowy</label><input id="price_sport" type="number" min="0" step="1"></div>
-      <div><label>Karnet 4 jazdy</label><input id="price_pass4" type="number" min="0" step="1"></div>
-      <div><label>Karnet 5 jazd</label><input id="price_pass5" type="number" min="0" step="1"></div>
-    </div>
-    <div class="actions"><button class="blue" onclick="savePriceSettings()">💾 Zapisz cennik</button></div>
-    <div class="inline-note">Przy każdej pojedynczej jeździe cenę możesz dodatkowo nadpisać ręcznie.</div>
-  </div>
-  <div class="card">
-    <h3 class="section-title">✅ Aktywne karnety <span id="activePassCount" class="badge green"></span></h3>
-    <div class="inline-note" style="margin-bottom:12px">Tutaj widzisz tylko karnety, z których można jeszcze korzystać.</div>
-    <div class="table-scroll"><table><thead><tr><th>Jeździec</th><th>Postęp</th><th>Zostało</th><th>Cena</th><th>Płatność</th><th>Ważny do</th><th>Akcje</th></tr></thead><tbody id="passesTable"></tbody></table></div>
-  </div>
-  <details class="card" id="passesArchive">
-    <summary style="cursor:pointer;font-weight:800;font-size:18px">📦 Archiwum karnetów <span id="archivePassCount" class="badge"></span></summary>
-    <div class="inline-note" style="margin:10px 0 12px">Wygasłe i wykorzystane karnety są zachowane, ale nie mieszają się z aktywnymi.</div>
-    <div class="table-scroll"><table><thead><tr><th>Jeździec</th><th>Postęp</th><th>Cena</th><th>Płatność</th><th>Ważny do</th><th>Status</th><th>Akcje</th></tr></thead><tbody id="passesArchiveTable"></tbody></table></div>
-  </details>
-</section>
-
-<section id="grupy" class="page"><div class="card"><h2>👥 Stałe grupy</h2>
-<div class="actions" id="groupDayFilters" style="margin-bottom:14px">
-<button class="gray" onclick="setGroupDayFilter('all')">Wszystkie</button>
-<button onclick="setGroupDayFilter(1)">Poniedziałek</button>
-<button onclick="setGroupDayFilter(2)">Wtorek</button>
-<button onclick="setGroupDayFilter(3)">Środa</button>
-<button onclick="setGroupDayFilter(4)">Czwartek</button>
-<button onclick="setGroupDayFilter(5)">Piątek</button>
-</div><input id="groupEditId" type="hidden"><div class="grid2"><div><label>Nazwa grupy</label><input id="groupName"></div><div><label>Dzień</label><select id="groupDay"><option value="1">Poniedziałek</option><option value="2">Wtorek</option><option value="3">Środa</option><option value="4">Czwartek</option><option value="5">Piątek</option><option value="6">Sobota</option><option value="0">Niedziela</option></select></div><div><label>Godzina</label><select id="groupTime"></select></div><div><label>Instruktor</label><select id="groupInstructor"></select></div></div><div>
-      <label>🔎 Szybko dodaj jeźdźca do grupy</label>
-      <input id="groupRiderSearch" type="search" placeholder="Wpisz imię, nazwisko lub telefon…" autocomplete="off" oninput="filterGroupRiders()" onfocus="filterGroupRiders()">
-      <div id="groupRiderResults" class="quick-results"></div>
-      <div class="inline-note">Kliknij osobę — zostanie dodana do pierwszego wolnego miejsca.</div>
-      <div style="margin-top:12px"><label>Jeźdźcy w grupie — maksymalnie 6</label><div id="groupMembers"></div></div>
-    </div><div class="actions"><button id="groupSaveBtn" class="green" onclick="saveGroup()">＋ Zapisz grupę</button><button id="groupCancelBtn" class="gray" style="display:none" onclick="cancelGroupEdit()">Anuluj edycję</button></div></div><div class="card"><div id="groupsTable" class="group-list"></div></div></section>
-<section id="konie" class="page"><div class="card"><h2>🐴 Konie</h2><div class="grid2"><div><label>Imię konia</label><input id="horseName"></div><div><label>Typ</label><select id="horseType"><option>Koń szkółkowy</option><option>Koń sportowy</option><option>Koń prywatny</option><option>Koń do hipoterapii</option></select></div></div><div class="actions"><button class="green" onclick="addHorse()">＋ Dodaj konia</button></div></div><div class="card table-scroll"><table><thead><tr><th>Koń</th><th>Typ</th><th>Akcje</th></tr></thead><tbody id="horsesTable"></tbody></table></div></section>
-<section id="instruktorzy" class="page"><div class="card"><h2>🧑‍🏫 Instruktorzy</h2><div class="grid2"><div><label>Imię i nazwisko</label><input id="instructorName"></div><div><label>Specjalizacja</label><select id="instructorType"><option>Jazda rekreacyjna</option><option>Sport</option><option>Lonża</option><option>Hipoterapia</option><option>Wszystkie</option></select></div></div><div class="actions"><button class="green" onclick="addInstructor()">＋ Dodaj instruktora</button></div></div><div class="card table-scroll"><table><thead><tr><th>Instruktor</th><th>Specjalizacja</th><th>Odbyte w tym miesiącu</th><th>Odbyte łącznie</th><th>Akcje</th></tr></thead><tbody id="instructorsTable"></tbody></table></div></section>
-</main>
-
-<div id="rideModal" class="modal"><div class="modal-box">
-<button class="close" onclick="closeRideModal()">✕</button><h2>🏇 Dodaj jazdę</h2>
-<div class="grid2">
-<div><label>Rodzaj zajęć</label><select id="rideType" onchange="rideTypeChanged()"><option value="indywidualna">Jazda pojedyncza</option><option value="grupowa">Jazda grupowa</option><option value="lonza">Lonża 30 min</option><option value="oprowadzanka">Oprowadzanka 30 min</option><option value="hipoterapia">Hipoterapia</option><option value="sport">Trening sportowy</option></select></div>
-<div><label>Data</label><input id="rideDate" type="date"></div>
-<div><label>Godzina</label><select id="rideTime"></select></div>
-<div><label>🔎 Szybkie wyszukiwanie jeźdźca</label><input id="rideRiderSearch" type="search" placeholder="Wpisz imię, nazwisko lub telefon…" autocomplete="off" oninput="filterRideRiders()" onfocus="filterRideRiders()"><div id="rideRiderResults" class="quick-results"></div><div class="inline-note">Kliknij osobę z wyników. Możesz szukać po imieniu, nazwisku albo numerze telefonu.</div></div>
-<div><label>Jeździec</label><select id="rideRider" onchange="rideRiderChanged()"></select></div>
-<div><label>🔎 Szukaj konia</label><input id="rideHorseSearch" type="search" placeholder="Wpisz imię konia…" autocomplete="off" oninput="filterRideHorses()"></div>
-<div><label>Koń</label><select id="rideHorse"></select></div>
-<div><label>🔎 Szukaj instruktora</label><input id="rideInstructorSearch" type="search" placeholder="Wpisz imię instruktora…" autocomplete="off" oninput="filterRideInstructors()"></div>
-<div><label>Instruktor</label><select id="rideInstructor"></select></div>
-<div><label>Grupa</label><select id="rideGroup"></select></div>
-<div><label>Stała jazda</label><select id="rideFixed"><option value="false">Nie</option><option value="true">Tak</option></select></div>
-<div><label>Cena tej jazdy (zł)</label><input id="rideCustomPrice" type="number" min="0" step="1"></div>
-<div><label>Rozliczenie z karnetu</label><select id="ridePass" onchange="ridePassChanged()"><option value="">Bez karnetu</option></select></div>
-<div id="rideNewPassPaymentWrap" style="display:none"><label>Nowy karnet — płatność</label><select id="rideNewPassPayment"><option value="paid">Zapłacony</option><option value="unpaid">Jeszcze nie zapłacony</option></select></div>
-<div id="rideNewPassPriceWrap" style="display:none"><label>Nowy karnet — cena (zł)</label><input id="rideNewPassPrice" type="number" min="0" step="1"></div>
-<div id="rideNewPassEndWrap" style="display:none"><label>Nowy karnet — ważny do</label><input id="rideNewPassEnd" type="date"></div>
+<div class="panel">
+<h2>🐴 Stajnia Siemowo Manager</h2>
+<p>Uruchamiam aplikację z asystentem głosowym <strong>„Hej, Stajnia!”</strong>…</p>
+<p id="loadingMsg" role="status" aria-live="polite">Wczytywanie grafiku, karnetów i koni…</p>
+<p class="small">Przy pierwszym uruchomieniu potrzebne jest połączenie z internetem.</p>
 </div>
-<div id="ridePrice" class="pricebox"></div>
-<div class="actions"><button class="green" onclick="saveRide()">Zapisz jazdę</button><button class="gray" onclick="closeRideModal()">Anuluj</button></div>
-</div></div>
-
-<div id="groupScheduleModal" class="modal"><div class="modal-box"><button class="close" onclick="closeGroupSchedule()">✕</button><h2 id="groupScheduleTitle">📅 Dodaj grupę do grafiku</h2><input id="groupScheduleId" type="hidden"><div class="grid2"><div><label>Data</label><input id="groupScheduleDate" type="date"></div><div><label>Godzina</label><input id="groupScheduleTime" disabled></div><div><label>Instruktor</label><select id="groupScheduleInstructor"></select></div><div><label>Stała jazda</label><select id="groupScheduleFixed"><option value="true">Tak</option><option value="false">Nie</option></select></div></div><div class="notice" style="margin-top:12px">Zaznacz osoby, które jadą, i wybierz każdej konia na ten trening.</div><div id="groupScheduleMembers"></div><div class="actions"><button class="green" onclick="saveWholeGroup()">💾 Zapisz całą grupę</button><button class="gray" onclick="closeGroupSchedule()">Anuluj</button></div></div></div>
-<div id="riderCardModal" class="modal"><div class="modal-box"><button class="close" onclick="closeRiderCard()">✕</button><h2 id="riderCardTitle">👤 Karta jeźdźca</h2><div id="riderCardBody"></div></div></div>
-
-<div id="groupAttendanceModal" class="modal"><div class="modal-box">
-<button class="close" onclick="closeGroupAttendance()">✕</button>
-<h2 id="attendanceTitle">✓ Lista obecności grupy</h2>
-<input id="attendanceGroupId" type="hidden">
-<div class="grid2"><div><label>Data</label><input id="attendanceDate" type="date"></div><div><label>Instruktor</label><select id="attendanceInstructor"></select></div></div>
-<div id="attendanceRows" style="margin-top:14px"></div>
-<div class="actions"><button class="green" onclick="saveGroupAttendance()">💾 Zapisz listę</button><button class="gray" onclick="closeGroupAttendance()">Anuluj</button></div>
-<div class="inline-note">Odbyta liczy się instruktorowi. Przełożona nie zużywa jazdy. Nieobecność bez odwołania pozostaje rozliczona zgodnie z karnetem.</div>
-</div></div>
-<div id="loading" class="loading">Zapisywanie…</div>
-
+</main>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbw_q5HGfj7p4pRLEmyp2ZkfsP0w3d_-soDVkP4yrUYfQGbmksstTUT1M3jmOFdnCfxU/exec';
-let riders=[],horses=[],instructors=[],passes=[],groups=[],rides=[];
-let currentDate=new Date();
-let priceSettings={indywidualna:80,lonza:80,oprowadzanka:60,hipoterapia:80,sport:0,pass4:240,pass5:300};
-const RIDE_STATUS_OVERRIDES_KEY='siemowo_ride_status_overrides_v1';
-function getRideStatusOverrides(){try{return JSON.parse(localStorage.getItem(RIDE_STATUS_OVERRIDES_KEY)||'{}')||{}}catch(e){return {}}}
-function setRideStatusOverride(id,status){let m=getRideStatusOverrides();m[id]=status;localStorage.setItem(RIDE_STATUS_OVERRIDES_KEY,JSON.stringify(m))}
-function removeRideStatusOverride(id){let m=getRideStatusOverrides();delete m[id];localStorage.setItem(RIDE_STATUS_OVERRIDES_KEY,JSON.stringify(m))}
-const PASS_PAYMENT_OVERRIDES_KEY='siemowo_pass_payment_overrides_v1';
-function getPaymentOverrides(){try{return JSON.parse(localStorage.getItem(PASS_PAYMENT_OVERRIDES_KEY)||'{}')||{}}catch(e){return {}}}
-function setPaymentOverride(id,status){let m=getPaymentOverrides();m[id]=status;localStorage.setItem(PASS_PAYMENT_OVERRIDES_KEY,JSON.stringify(m))}
-function removePaymentOverride(id){let m=getPaymentOverrides();delete m[id];localStorage.setItem(PASS_PAYMENT_OVERRIDES_KEY,JSON.stringify(m))}
+(async function () {
+  "use strict";
+  const sourceURLs = ["https://raw.githubusercontent.com/klarakonik80-ship-it/stajnia-siemowo/88efd0589a974d8bca1a9356a6381889feae07e0/index.html", "https://cdn.jsdelivr.net/gh/klarakonik80-ship-it/stajnia-siemowo@88efd0589a974d8bca1a9356a6381889feae07e0/index.html"];
+  const voiceModule = "/*\n * Stajnia Siemowo Manager — asystent głosowy (wersja testowa)\n * Instalacja: dodaj \u003cscript src=\"asystent-glosowy-stajnia-siemowo.js\">\u003c/script>\n * tuż przed \u003c/body> w istniejącym index.html, a plik umieść obok index.html.\n * Funkcja używa rozpoznawania mowy przeglądarki: nie nasłuchuje przy zamkniętej stronie.\n */\n(() => {\n  'use strict';\n  if (document.getElementById('siemowoVoicePanel')) return;\n  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;\n  const get = id => document.getElementById(id);\n  const clean = s => String(s || '').toLocaleLowerCase('pl-PL').normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '').replace(/ł/g, 'l').replace(/[^a-z0-9: ]/g, ' ')\n    .replace(/\\s+/g, ' ').trim();\n  const words = s => clean(s).split(' ').filter(Boolean);\n  const includesWord = (speech, token) => words(speech).some(w => w === token || (token.length >= 5 && w.startsWith(token.slice(0, 4))));\n  const nicknames = {\n    zofia: ['zosia','zosi','zosie','zofii'],\n    zuzanna: ['zuzia','zuzi','zuzie'],\n    julia: ['julia','julie','julii'],\n    natalia: ['natalia','natalie','natalii'],\n    aleksandra: ['ola','oli','ole'],\n    aleksander: ['olek','olka'],\n    katarzyna: ['kasia','kasi','kasie'],\n    malgorzata: ['gosia','gosi','gosie'],\n    anna: ['ania','ani','anie']\n  };\n  let pending = null;\n  let recog = null;\n  let listening = false;\n  let speechOn = true;\n\n  const css = document.createElement('style');\n  css.textContent = `\n    .sv-launch{background:#166534!important;display:inline-flex;align-items:center;gap:7px}\n    .sv-panel{display:none;position:fixed;inset:auto 12px 12px auto;z-index:250;width:min(430px,calc(100vw - 24px));\n      max-height:min(690px,85dvh);overflow:auto;background:#fff;color:#222;border-radius:19px;\n      box-shadow:0 10px 45px #0004;border:1px solid #ddd;padding:18px}\n    .sv-panel.open{display:block}\n    .sv-top{display:flex;align-items:center;justify-content:space-between;gap:10px}\n    .sv-top h3{margin:0;font-size:20px}\n    .sv-info{margin:10px 0;color:#666;font-size:13px;line-height:1.5}\n    .sv-answer{margin:12px 0;padding:12px;border-radius:12px;background:#f0f7f2;white-space:pre-wrap;line-height:1.5}\n    .sv-transcript{font-size:13px;color:#555;min-height:20px}\n    .sv-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}\n    .sv-actions button{flex:1}\n    .sv-inputrow{display:flex;gap:8px}.sv-inputrow input{min-width:0;flex:1}\n    .sv-inputrow button{white-space:nowrap}\n    .sv-examples{font-size:12px;color:#666;line-height:1.6;margin-top:10px}\n    .sv-close{padding:6px 12px;background:#777}\n    .sv-listening{background:#b91c1c!important}\n    @media(max-width:700px){.sv-panel{inset:auto 8px 8px 8px;width:auto;max-height:80dvh}}\n  `;\n  document.head.appendChild(css);\n\n  const launch = document.createElement('button');\n  launch.type = 'button';\n  launch.className = 'sv-launch';\n  launch.textContent = '🎙️ Hej, Stajnia';\n  launch.setAttribute('aria-label', 'Otwórz asystenta głosowego');\n  (document.querySelector('header .sync') || document.querySelector('header') || document.body).appendChild(launch);\n\n  const panel = document.createElement('section');\n  panel.id = 'siemowoVoicePanel';\n  panel.className = 'sv-panel';\n  panel.setAttribute('aria-label', 'Asystent głosowy Stajni Siemowo');\n  panel.innerHTML = `\n    \u003cdiv class=\"sv-top\">\u003ch3>🐴 Hej, Stajnia!\u003c/h3>\u003cbutton class=\"sv-close\" type=\"button\" id=\"svClose\">✕\u003c/button>\u003c/div>\n    \u003cp class=\"sv-info\">Naciśnij mikrofon i powiedz polecenie po polsku. Możesz zacząć od „Hej, Stajnia”.\n    Mikrofon działa tylko wtedy, gdy go włączysz, i tylko w otwartej aplikacji.\u003c/p>\n    \u003cdiv id=\"svTranscript\" class=\"sv-transcript\" aria-live=\"polite\">\u003c/div>\n    \u003cdiv id=\"svAnswer\" class=\"sv-answer\" role=\"status\" aria-live=\"polite\">Cześć! Możesz zapytać o grafik, konie, jeźdźców i karnety.\u003c/div>\n    \u003cdiv class=\"sv-actions\">\n      \u003cbutton class=\"green\" id=\"svMic\" type=\"button\">🎙️ Mów\u003c/button>\n      \u003cbutton class=\"gray\" id=\"svAudio\" type=\"button\" aria-pressed=\"true\">🔊 Głos: włączony\u003c/button>\n    \u003c/div>\n    \u003cdiv class=\"sv-inputrow\">\u003cinput id=\"svText\" aria-label=\"Wpisz polecenie\" placeholder=\"Albo wpisz polecenie…\">\n      \u003cbutton class=\"blue\" id=\"svSend\" type=\"button\">Wyślij\u003c/button>\u003c/div>\n    \u003cdiv class=\"sv-examples\">Przykłady: „Ile jazd zostało Zosi Tomczak?”, „Kto dzisiaj jeździ o 16?”,\n      „Pokaż niezapłacone karnety”, „Zapisz Julię jutro na 17 na Ferrari z Natalią”.\u003c/div>\n  `;\n  document.body.appendChild(panel);\n\n  const stopListening = () => {\n    if (recog) { try { recog.abort(); } catch (_) {} recog = null; }\n    listening = false;\n    get('svMic').textContent = '🎙️ Mów';\n    get('svMic').classList.remove('sv-listening');\n  };\n  const speak = text => {\n    if (!speechOn || !('speechSynthesis' in window)) return;\n    try {\n      window.speechSynthesis.cancel();\n      const utterance = new SpeechSynthesisUtterance(text);\n      utterance.lang = 'pl-PL'; utterance.rate = 0.96;\n      const polish = window.speechSynthesis.getVoices().find(v => v.lang.toLowerCase().startsWith('pl'));\n      if (polish) utterance.voice = polish;\n      window.speechSynthesis.speak(utterance);\n    } catch (err) { console.warn('Asystent: mowa niedostępna', err); }\n  };\n  const reply = (text, spokenText = text) => {\n    get('svAnswer').textContent = text;\n    speak(spokenText);\n  };\n  const pick = (entities, utterance) => {\n    const matches = entities.map(item => {\n      const parts = words(item.name);\n      const first = parts[0] || '';\n      const surname = parts.slice(1).join(' ');\n      const nameMatch = parts.length > 1 && clean(utterance).includes(parts.join(' '));\n      const firstVariants = [first, ...(nicknames[first] || [])];\n      const firstMatch = firstVariants.some(v => includesWord(utterance, v));\n      const surnameMatch = !!surname && surname.split(' ').some(v => includesWord(utterance, v));\n      const singleNameMatch = parts.length === 1 && firstMatch;\n      return {item, score: nameMatch ? 12 : (surnameMatch ? 6 : 0) + (firstMatch ? 3 : 0) + (singleNameMatch ? 2 : 0)};\n    }).filter(x => x.score > 0).sort((a,b) => b.score - a.score);\n    if (!matches.length) return {item:null, ambiguous:false};\n    const top = matches.filter(x => x.score === matches[0].score);\n    return {item:top.length === 1 ? top[0].item : null, ambiguous:top.length > 1,\n      options:top.slice(0,5).map(x => x.item.name)};\n  };\n  const who = (collection, sentence, label) => {\n    const result = pick(collection, sentence);\n    if (result.ambiguous) throw new Error(`Jest kilka pasujących osób lub koni: ${result.options.join(', ')}. Powiedz także nazwisko albo pełną nazwę.`);\n    return result.item;\n  };\n  const parseDate = sentence => {\n    const s = clean(sentence);\n    if (s.includes('pojutrze')) return fmt(addDays(new Date(),2));\n    if (s.includes('jutro')) return fmt(addDays(new Date(),1));\n    if (s.includes('dzis')) return fmt(new Date());\n    const weekday = ['niedziel','poniedzial','wtorek','srod','czwart','piat','sobot'];\n    const day = weekday.findIndex(name => s.includes(name));\n    if (day >= 0) { const now = new Date(); return fmt(addDays(now, ((day - now.getDay() + 7) % 7))); }\n    const numeric = sentence.match(/\\b(\\d{1,2})[.\\/-](\\d{1,2})(?:[.\\/-](\\d{4}))?\\b/);\n    if (numeric) {\n      const year = Number(numeric[3] || new Date().getFullYear());\n      const month = Number(numeric[2]), dayNum = Number(numeric[1]);\n      const dt = new Date(year, month-1, dayNum, 12);\n      if (dt.getFullYear()===year && dt.getMonth()===month-1 && dt.getDate()===dayNum) return fmt(dt);\n    }\n    return null;\n  };\n  const parseTime = sentence => {\n    let match = sentence.match(/\\b([01]?\\d|2[0-3])[:.]([0-5]\\d)\\b/);\n    if (match) return `${String(match[1]).padStart(2,'0')}:${match[2]}`;\n    match = clean(sentence).match(/\\b(?:o|na|godzina|godzinie|godz|godzine)\\s+([01]?\\d|2[0-3])\\b/);\n    if (match) return `${match[1].padStart(2,'0')}:00`;\n    return null;\n  };\n  const showRider = rider => { showPage('jezdzcy'); openRiderCard(rider.id); };\n  const passSummary = sentence => {\n    const rider = who(riders, sentence, 'jeździec');\n    if (!rider) return reply('Nie znalazłam jeźdźca. Powiedz jego imię i nazwisko.');\n    const pp = passes.filter(p => p.rider===rider.id && passState(p).active);\n    showRider(rider);\n    if (!pp.length) return reply(`${rider.name} nie ma obecnie aktywnego karnetu.`);\n    const left = pp.reduce((sum,p)=>sum+Math.max(0, Number(p.total||0)-Number(p.used||0)),0);\n    const unpaid = pp.some(p => (p.paymentStatus||'paid')==='unpaid');\n    reply(`${rider.name}: pozostało ${left} jazd na ${pp.length} aktywnych karnetach. ${unpaid?'Jest karnet do zapłaty.':'Karnety są oznaczone jako opłacone.'}`);\n  };\n  const unpaidPasses = () => {\n    const pp = passes.filter(p => passState(p).active && (p.paymentStatus||'paid')==='unpaid');\n    showPage('karnety');\n    if (!pp.length) return reply('Nie ma aktywnych karnetów oznaczonych jako nieopłacone.');\n    const names = pp.map(p => (riders.find(r=>r.id===p.rider)||{}).name || 'Nieznany jeździec');\n    const display = `Nieopłacone karnety (${pp.length}):\\n${names.map((n,i)=>`${i+1}. ${n}`).join('\\n')}`;\n    reply(display, `Są ${pp.length} nieopłacone karnety. ${names.slice(0,5).join(', ')}${names.length>5?'. Pełna lista na ekranie.':''}`);\n  };\n  const scheduleSummary = sentence => {\n    const date = parseDate(sentence) || fmt(new Date());\n    const time = parseTime(sentence);\n    const list = rides.filter(r=>normalizeDate(r.date)===date &&\n      (r.status||'planned')!=='rescheduled' && (!time || normalizeTime(r.time)===time))\n      .sort((a,b)=>normalizeTime(a.time).localeCompare(normalizeTime(b.time)));\n    currentDate = new Date(`${date}T12:00:00`); showPage('grafik'); renderSchedule();\n    if (!list.length) return reply(`Na ${date}${time?' o '+time:''} nie ma wpisanych jazd.`);\n    const summaries = list.map(r => {\n      const rider = riders.find(x => x.id === r.rider);\n      const instructor = instructors.find(x => x.id === r.instructor);\n      return `${normalizeTime(r.time)} – ${rider?rider.name:'Jeździec'}${instructor?' ('+instructor.name+')':''}`;\n    });\n    const head = `${date}${time?' o '+time:''}: ${list.length} zapisanych jazd.`;\n    reply(`${head}\\n${summaries.join('\\n')}`,\n      `${head} ${summaries.slice(0,6).join('. ')}${summaries.length>6?'. Pozostałe na ekranie.':''}`);\n  };\n  const horseSummary = sentence => {\n    const date = parseDate(sentence) || fmt(new Date());\n    const time = parseTime(sentence);\n    if (!time) return reply('Powiedz godzinę, na przykład: „Które konie są wolne jutro o 16?”');\n    const occupied = new Set(rides.filter(r => normalizeDate(r.date)===date && normalizeTime(r.time)===time &&\n      (r.status||'planned')!=='rescheduled').map(r=>r.horse));\n    const free = horses.filter(h => !occupied.has(h.id));\n    reply(`Na ${date} o ${time} wolne w grafiku (${free.length}): ${free.map(h=>h.name).join(', ') || 'brak'}.`,\n      `Na ${date} o ${time} jest ${free.length} wolnych koni w grafiku. ${free.slice(0,8).map(h=>h.name).join(', ')}.`);\n  };\n  const prepareRide = sentence => {\n    const rider = who(riders, sentence, 'jeździec');\n    const horse = who(horses, sentence, 'koń');\n    const instructor = who(instructors, sentence, 'instruktor');\n    const date = parseDate(sentence);\n    const time = parseTime(sentence);\n    pending = null;\n    showPage('grafik');\n    openRideModal();\n    if (date) get('rideDate').value = date;\n    if (time && [...get('rideTime').options].some(o=>o.value===time)) get('rideTime').value = time;\n    if (rider) { get('rideRider').value=rider.id; rideRiderChanged(); }\n    if (horse) get('rideHorse').value=horse.id;\n    if (instructor) get('rideInstructor').value=instructor.id;\n    const missing = [!rider?'jeździec':null,!horse?'koń':null,!instructor?'instruktor':null,\n      !date?'dzień':null,(!time || get('rideTime').value!==time)?'godzina dostępna w grafiku':null].filter(Boolean);\n    if (missing.length) return reply(`Przygotowałam formularz jazdy. Uzupełnij: ${missing.join(', ')}. Potem sprawdź dane i kliknij „Zapisz jazdę”.`);\n    const occupied = rides.some(r=>normalizeDate(r.date)===date && normalizeTime(r.time)===time &&\n      (r.status||'planned')!=='rescheduled' && (r.rider===rider.id || r.horse===horse.id));\n    if (occupied) return reply('Uwaga: jeździec lub koń ma już jazdę w tym terminie. Zmień termin albo konia. Niczego nie zapisałam.');\n    pending = {rider:rider.id,horse:horse.id,instructor:instructor.id,date,time};\n    reply(`Przygotowałam jazdę: ${rider.name}, ${date} o ${time}, koń ${horse.name}, instruktor ${instructor.name}. Sprawdź formularz. Powiedz „Potwierdzam” albo kliknij „Zapisz jazdę”.`);\n  };\n  const confirmRide = async () => {\n    if (!pending) return reply('Nie ma przygotowanej jazdy do potwierdzenia.');\n    const p = pending;\n    const modalVisible = get('rideModal').classList.contains('show');\n    if (!modalVisible || get('rideRider').value!==p.rider || get('rideHorse').value!==p.horse ||\n        get('rideInstructor').value!==p.instructor || get('rideDate').value!==p.date || get('rideTime').value!==p.time) {\n      pending=null;\n      return reply('Formularz został zmieniony. Sprawdź go i zapisz jazdę przyciskiem, żeby uniknąć pomyłki.');\n    }\n    pending=null;\n    const count = rides.length;\n    await saveRide();\n    reply(rides.length>count?'Jazda została dodana do grafiku.':'Nie udało się dodać jazdy. Sprawdź komunikat na ekranie.');\n  };\n  const handle = async raw => {\n    get('svTranscript').textContent = 'Usłyszałam: „' + raw + '”';\n    const sentence = clean(raw).replace(/^(hej )?stajni[aoe] ?/, '').trim();\n    if (!sentence) return reply('Słucham! Powiedz, co mam znaleźć lub wpisać.');\n    if (/^(anuluj|odwolaj|nie zapisuj|stop)$/.test(sentence)) { pending=null; return reply('Anulowałam polecenie. Niczego nie zapisałam.'); }\n    if (/^(potwierdzam|potwierdz|tak zapisz|tak potwierdzam)$/.test(sentence)) return confirmRide();\n    try {\n      if (/pomoc|co potrafisz|jakie polecenia/.test(sentence))\n        return reply('Potrafię znaleźć karnet jeźdźca, pokazać nieopłacone karnety, dzisiejszy grafik, wolne konie i przygotować zapis jazdy.');\n      if (/(niezaplacon|nieoplacon|do zaplaty)/.test(sentence) && /(karnet|platn)/.test(sentence)) return unpaidPasses();\n      if (/(zapisz|dopisz|umow|dodaj jazde|nowa jazda)/.test(sentence)) return prepareRide(raw);\n      if (/(wolne|dostepne)/.test(sentence) && /(konie|kon|koni)/.test(sentence)) return horseSummary(raw);\n      if (/(karnet|ile jazd|pozostal|zostalo)/.test(sentence)) return passSummary(raw);\n      if (/(kto|grafik|jazdy|jezdzi|zaplanowane)/.test(sentence)) return scheduleSummary(raw);\n      if (/(znajdz|wyszukaj|pokaz|karta)/.test(sentence)) {\n        const rider=who(riders,raw,'jeździec');\n        if (rider) { showRider(rider); return reply(`Otworzyłam kartę jeźdźca: ${rider.name}.`); }\n        return reply('Nie znalazłam tej osoby. Podaj imię i nazwisko.');\n      }\n      reply('Nie zrozumiałam tego polecenia. Powiedz „Pomoc”, aby usłyszeć przykłady.');\n    } catch (err) { reply(err && err.message ? err.message : 'Nie udało się wykonać polecenia.'); }\n  };\n  const startMic = () => {\n    if (listening) { stopListening(); return; }\n    if (!SpeechRecognition) return reply('Ta przeglądarka nie udostępnia rozpoznawania mowy. Możesz użyć mikrofonu na klawiaturze iPhone’a w polu tekstowym lub wpisać polecenie.');\n    try {\n      if ('speechSynthesis' in window) window.speechSynthesis.cancel();\n      recog = new SpeechRecognition();\n      recog.lang = 'pl-PL'; recog.interimResults=false; recog.continuous=false; recog.maxAlternatives=1;\n      const session = recog;\n      recog.onresult = e => {\n        if (recog !== session) return;\n        const phrase=e.results[0][0].transcript;\n        recog=null; listening=false;\n        get('svMic').textContent='🎙️ Mów'; get('svMic').classList.remove('sv-listening');\n        void handle(phrase);\n      };\n      recog.onerror = e => {\n        if (recog !== session) return;\n        stopListening();\n        const msg = e.error==='not-allowed'?'Zezwól przeglądarce na używanie mikrofonu.':\n          e.error==='no-speech'?'Nie usłyszałam polecenia. Spróbuj ponownie.':\n          'Nie udało się rozpoznać mowy. Spróbuj ponownie lub wpisz polecenie.';\n        get('svAnswer').textContent=msg;\n      };\n      recog.onend = () => {\n        if (recog !== session) return;\n        recog=null; listening=false;\n        get('svMic').textContent='🎙️ Mów'; get('svMic').classList.remove('sv-listening');\n      };\n      recog.start(); listening=true;\n      get('svMic').textContent='⏹ Zatrzymaj'; get('svMic').classList.add('sv-listening');\n      get('svTranscript').textContent='Słucham…';\n    } catch (err) { stopListening(); reply('Nie udało się włączyć mikrofonu. Sprawdź uprawnienia przeglądarki.'); }\n  };\n  launch.addEventListener('click', () => { panel.classList.toggle('open'); if (!panel.classList.contains('open')) stopListening(); });\n  get('svClose').addEventListener('click', () => {panel.classList.remove('open'); stopListening();});\n  get('svMic').addEventListener('click', startMic);\n  get('svAudio').addEventListener('click', () => {\n    speechOn=!speechOn;\n    get('svAudio').textContent=speechOn?'🔊 Głos: włączony':'🔇 Głos: wyłączony';\n    get('svAudio').setAttribute('aria-pressed',String(speechOn));\n    if (!speechOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();\n  });\n  const submitText = () => { const text=get('svText').value.trim(); if(text) {get('svText').value=''; void handle(text);} };\n  get('svSend').addEventListener('click',submitText);\n  get('svText').addEventListener('keydown',event=>{if(event.key==='Enter')submitText();});\n})();\n";
+  const cacheKey = "siemowo_manager_original_html_pinned_v1";
+  const msg = document.getElementById("loadingMsg");
 
-const OFFLINE_CACHE_KEY='siemowo_offline_cache_v4';
-const OFFLINE_PENDING_KEY='siemowo_offline_pending_v4';
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
-function fmt(d){let x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
-function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
-function monday(d){let x=new Date(d);let day=x.getDay();x.setDate(x.getDate()-(day===0?6:day-1));x.setHours(12,0,0,0);return x}
-function dayName(d){return['ndz.','pon.','wt.','śr.','czw.','pt.','sob.'][d.getDay()]}
-function niceDate(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')}
-function normalizeTime(v){let s=String(v??'');let m=s.match(/(?:T|\s)(\d{2}):(\d{2})/);if(m)return m[1]+':'+m[2];m=s.match(/^(\d{1,2}):(\d{2})/);if(m)return String(m[1]).padStart(2,'0')+':'+m[2];return s}
-function normalizeDate(v){let s=String(v??'');let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];let d=new Date(v);if(!isNaN(d))return fmt(d);return s}
-function phoneDigits(v){return String(v||'').replace(/[^0-9+]/g,'')}
-function sendSms(riderId){let r=riders.find(x=>x.id===riderId);if(!r||!phoneDigits(r.phone))return alert('Najpierw wpisz numer telefonu tej osoby.');let next=rides.filter(x=>x.rider===riderId&&normalizeDate(x.date)>=fmt(new Date())&&(x.status||'planned')==='planned').sort((a,b)=>String(normalizeDate(a.date)+normalizeTime(a.time)).localeCompare(String(normalizeDate(b.date)+normalizeTime(b.time))))[0];let message=next?`Przypominamy o jeździe w Stajni Siemowo: ${normalizeDate(next.date)} o ${normalizeTime(next.time)}. Prosimy o potwierdzenie obecności.`:'Wiadomość ze Stajni Siemowo.';window.location.href='sms:'+phoneDigits(r.phone)+'?&body='+encodeURIComponent(message)}
-function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
-function setSync(ok,text){$('syncDot').className='dot '+(ok?'ok':'bad');$('syncText').textContent=text}
-function busy(v){$('loading').style.display=v?'block':'none'}
-function normalize(o){return o&&typeof o==='object'?o:{}}
-
-function loadLocalPrices(){try{let x=JSON.parse(localStorage.getItem('siemowo_price_settings')||'null');if(x&&typeof x==='object')priceSettings={...priceSettings,...x}}catch(e){}}
-function saveLocalPrices(){localStorage.setItem('siemowo_price_settings',JSON.stringify(priceSettings))}
-function applyPriceInputs(){['indywidualna','lonza','oprowadzanka','hipoterapia','sport'].forEach(k=>{let e=$('price_'+k);if(e)e.value=Number(priceSettings[k]||0)});$('price_pass4').value=Number(priceSettings.pass4||0);$('price_pass5').value=Number(priceSettings.pass5||0);passTotalChanged()}
-function savePriceSettings(){['indywidualna','lonza','oprowadzanka','hipoterapia','sport'].forEach(k=>priceSettings[k]=Number($('price_'+k).value||0));priceSettings.pass4=Number($('price_pass4').value||0);priceSettings.pass5=Number($('price_pass5').value||0);saveLocalPrices();passTotalChanged();saveAll();alert('Cennik zapisany.')}
-function passTotalChanged(){let total=Number($('passTotal').value||4);$('passPrice').value=total===4?Number(priceSettings.pass4||0):Number(priceSettings.pass5||0)}
-
-function snapshotData(){return {riders,horses,instructors,passes,groups,rides,settings:{prices:priceSettings},savedAt:new Date().toISOString()}}
-function persistLocal(pending=true){try{localStorage.setItem(OFFLINE_CACHE_KEY,JSON.stringify(snapshotData()));if(pending)localStorage.setItem(OFFLINE_PENDING_KEY,'1')}catch(e){console.warn('local cache',e)}}
-function clearPending(){try{localStorage.removeItem(OFFLINE_PENDING_KEY)}catch(e){}}
-function hasPending(){try{return localStorage.getItem(OFFLINE_PENDING_KEY)==='1'}catch(e){return false}}
-function restoreLocal(){try{let d=JSON.parse(localStorage.getItem(OFFLINE_CACHE_KEY)||'null');if(!d)return false;riders=d.riders||[];horses=d.horses||[];instructors=d.instructors||[];{
-      const paymentOverrides=getPaymentOverrides();
-      passes=(d.passes||[]).map(p=>({...p,total:Number(p.total)||0,used:Number(p.used)||0,price:Number(p.price)||0,paymentStatus:paymentOverrides[p.id]||p.paymentStatus||'paid'}));
-    }groups=(d.groups||[]).map(g=>({...g,day:Number(g.day),time:normalizeTime(g.time),members:Array.isArray(g.members)?g.members:String(g.members||'').split('|').filter(Boolean)}));{const rideStatusOverrides=getRideStatusOverrides();rides=(d.rides||[]).map(r=>({...r,date:normalizeDate(r.date),time:normalizeTime(r.time),fixed:String(r.fixed)==='true'||r.fixed===true,price:Number(r.price)||0,status:rideStatusOverrides[r.id]||r.status||'planned',rescheduleMonth:r.rescheduleMonth||''}));}if(d.settings&&d.settings.prices)priceSettings={...priceSettings,...d.settings.prices};renderAll();applyPriceInputs();return true}catch(e){console.warn('restore local',e);return false}}
-function updateConnectionStatus(){if(!navigator.onLine){setSync(false,hasPending()?'Brak internetu — zmiany zapisane lokalnie, czekają na synchronizację':'Brak internetu — pracujesz na danych zapisanych lokalnie')}else if(hasPending()){setSync(false,'Internet wrócił — trwa synchronizacja lokalnych zmian…')}}
-function apiGetAll(){return new Promise((resolve,reject)=>{let cb='stajniaCb_'+Date.now()+'_'+Math.random().toString(36).slice(2);let script=document.createElement('script');let timer=setTimeout(()=>{cleanup();reject(new Error('Brak odpowiedzi serwera'));},12000);function cleanup(){clearTimeout(timer);try{delete window[cb]}catch(e){}if(script.parentNode)script.parentNode.removeChild(script)}window[cb]=data=>{cleanup();resolve(data)};script.onerror=()=>{cleanup();reject(new Error('Nie udało się pobrać danych'))};script.src=API_URL+'?action=getAll&callback='+encodeURIComponent(cb)+'&_='+Date.now();document.head.appendChild(script)})}
-async function loadAll(forceServer=false){
-  if(!navigator.onLine){restoreLocal();updateConnectionStatus();return}
-  if(hasPending()&&!forceServer){restoreLocal();setSync(false,'Oczekujące zmiany lokalne — synchronizuję…');await saveAll();return}
-  try{
-    busy(true);let res=await apiGetAll();if(!res.success)throw new Error(res.error||'Błąd');let d=normalize(res.data);
-    riders=d.riders||[];horses=d.horses||[];instructors=d.instructors||[];
-    {
-      const paymentOverrides=getPaymentOverrides();
-      passes=(d.passes||[]).map(p=>({...p,total:Number(p.total)||0,used:Number(p.used)||0,price:Number(p.price)||0,paymentStatus:paymentOverrides[p.id]||p.paymentStatus||'paid'}));
+  async function getOriginal() {
+    // Pinned, preserved source. Never fetch this site's new index.html.
+    for (const url of sourceURLs) {
+      try {
+        const res = await fetch(url, {cache:"force-cache"});
+        if (!res.ok) continue;
+        const body = await res.text();
+        if (!body.includes("Stajnia Siemowo Manager") ||
+            !body.includes("function renderAll()") ||
+            !body.includes("function saveRide()")) continue;
+        try { localStorage.setItem(cacheKey, body); } catch (_) {}
+        return body;
+      } catch (_) {}
     }
-    groups=(d.groups||[]).map(g=>({...g,day:Number(g.day),time:normalizeTime(g.time),members:String(g.members||'').split('|').filter(Boolean)}));
-    {const rideStatusOverrides=getRideStatusOverrides();rides=(d.rides||[]).map(r=>({...r,date:normalizeDate(r.date),time:normalizeTime(r.time),fixed:String(r.fixed)==='true'||r.fixed===true,price:Number(r.price)||0,status:rideStatusOverrides[r.id]||r.status||'planned',rescheduleMonth:r.rescheduleMonth||''}));}
-    if(d.settings&&d.settings.prices){priceSettings={...priceSettings,...d.settings.prices};saveLocalPrices()}
-    renderAll();applyPriceInputs();persistLocal(false);clearPending();setSync(true,'Wspólne dane — zsynchronizowano');
-  }catch(e){console.error(e);if(restoreLocal())setSync(false,'Brak połączenia z arkuszem — pokazuję ostatnią lokalną kopię');else setSync(false,'Brak połączenia z arkuszem — kliknij Odśwież')}
-  finally{busy(false)}
-}
-async function saveAll(){
-  persistLocal(true);
-  if(!navigator.onLine){updateConnectionStatus();return}
-  try{
-    busy(true);
-    let data={riders,horses,instructors,passes,groups:groups.map(g=>({...g,time:normalizeTime(g.time),members:(g.members||[]).join('|')})),rides:rides.map(r=>({...r,date:normalizeDate(r.date),time:normalizeTime(r.time)})),settings:{prices:priceSettings}};
-    await fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveAll',data})});
-    persistLocal(false);clearPending();setSync(true,'Zmiany wysłane — synchronizacja zakończona');setTimeout(()=>loadAll(true),2500);
-  }catch(e){console.error(e);persistLocal(true);setSync(false,'Nie udało się wysłać — zmiany są bezpiecznie zapisane lokalnie')}
-  finally{busy(false)}
-}
-
-function fillTimes(){['rideTime','groupTime'].forEach(id=>{let s=$(id);s.innerHTML='';for(let h=7;h<=20;h++)for(let m of [0,30]){let t=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');s.add(new Option(t,t))}})}
-function currentGroupMemberValues(){return[...document.querySelectorAll('#groupMembers select')].map(s=>s.value)}
-function createMemberSelectors(selected=[]){let box=$('groupMembers');box.innerHTML='';for(let i=0;i<6;i++){let s=document.createElement('select');s.innerHTML='<option value="">— wolne miejsce —</option>';riders.forEach(r=>s.add(new Option(r.name,r.id)));s.value=selected[i]||'';let d=document.createElement('div');d.className='group-member';d.appendChild(s);box.appendChild(d)}}
-function fillSelect(id,arr,placeholder,filter=''){let s=$(id),old=s.value,q=String(filter||'').trim().toLocaleLowerCase('pl-PL');s.innerHTML='<option value="">'+placeholder+'</option>';arr.filter(x=>!q||String(x.name||'').toLocaleLowerCase('pl-PL').includes(q)).forEach(x=>s.add(new Option(x.name,x.id)));if([...s.options].some(o=>o.value===old))s.value=old}
-function refreshSelects(){
-  let memberValues=currentGroupMemberValues();
-  let oldPass=$('passRider')?$('passRider').value:'';
-  fillSelect('passRider',riders,'Wybierz jeźdźca');
-  if(oldPass && [...$('passRider').options].some(o=>o.value===oldPass))$('passRider').value=oldPass;
-  fillSelect('groupInstructor',instructors,'Wybierz instruktora');
-  let rg=$('rideGroup'),old=rg.value;rg.innerHTML='<option value="">Bez grupy</option>';groups.forEach(g=>rg.add(new Option(g.name,g.id)));rg.value=old;
-  createMemberSelectors(memberValues);
-}
-
-function renderStart(){
-  let today=fmt(new Date()),todayRides=rides.filter(r=>normalizeDate(r.date)===today).sort((a,b)=>normalizeTime(a.time).localeCompare(normalizeTime(b.time)));
-  let activePasses=passes.filter(p=>passState(p).active);
-  let unpaid=activePasses.filter(p=>(p.paymentStatus||'paid')==='unpaid');
-  let limit=fmt(addDays(new Date(),7));
-  let ending=activePasses.filter(p=>{let e=normalizeDate(p.end);return e&&e>=today&&e<=limit});
-  let d=$('startDate');if(d)d.textContent=new Date().toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  if($('startRideCount'))$('startRideCount').textContent=todayRides.length;
-  if($('startUnpaidCount'))$('startUnpaidCount').textContent=unpaid.length;
-  if($('startEndingCount'))$('startEndingCount').textContent=ending.length;
-  if($('startTodayRides'))$('startTodayRides').innerHTML=todayRides.length?todayRides.map(r=>{
-    let rr=riders.find(x=>x.id===r.rider),hh=horses.find(x=>x.id===r.horse),ii=instructors.find(x=>x.id===r.instructor);
-    return `<div style="padding:11px 0;border-bottom:1px solid #eee"><b style="font-size:18px">${esc(normalizeTime(r.time))} — ${esc(rr?rr.name:'Jeździec')}</b><div class="muted" style="margin-top:4px">🐴 ${esc(hh?hh.name:'—')} &nbsp; 🧑‍🏫 ${esc(ii?ii.name:'—')} &nbsp; ${rideStatusBadge(r)}</div>${rr&&rr.phone?`<button class="blue" style="margin-top:7px;padding:7px 10px" onclick="sendSms('${rr.id}')">📱 Wyślij przypomnienie</button>`:''}</div>`;
-  }).join(''):'<div class="empty">Na dziś nie ma wpisanych jazd.</div>';
-  let horseWork={};todayRides.filter(r=>(r.status||'planned')!=='rescheduled'&&r.horse).forEach(r=>(horseWork[r.horse]||(horseWork[r.horse]=[])).push(normalizeTime(r.time)));
-  let busyHorses=horses.filter(h=>horseWork[h.id]),freeHorses=horses.filter(h=>!horseWork[h.id]);
-  if($('startBusyHorses'))$('startBusyHorses').innerHTML=busyHorses.length?busyHorses.map(h=>`<div class="horse-board-item"><b>🐴 ${esc(h.name)}</b><div class="muted">${horseWork[h.id].length} ${horseWork[h.id].length===1?'jazda':'jazdy'}: ${horseWork[h.id].sort().map(esc).join(', ')}</div></div>`).join(''):'<div class="muted">Żaden koń nie jest jeszcze wpisany.</div>';
-  if($('startFreeHorses'))$('startFreeHorses').innerHTML=freeHorses.length?freeHorses.map(h=>`<div class="horse-board-item"><b>🐴 ${esc(h.name)}</b><div class="muted">${esc(h.type||'')}</div></div>`).join(''):'<div class="muted">Brak wolnych koni.</div>';
-  let tasks=[];
-  unpaid.forEach(p=>{let r=riders.find(x=>x.id===p.rider);tasks.push(`💰 <b>${esc(r?r.name:'Jeździec')}</b> — karnet do zapłaty (${Number(p.price||0)} zł)`)});
-  ending.forEach(p=>{let r=riders.find(x=>x.id===p.rider),left=Math.max(0,Number(p.total)-Number(p.used||0));tasks.push(`🎟️ <b>${esc(r?r.name:'Jeździec')}</b> — karnet ważny do ${esc(normalizeDate(p.end))}, zostało ${left} jazd`)});
-  if($('startTasks'))$('startTasks').innerHTML=tasks.length?tasks.map(x=>`<div style="padding:10px 0;border-bottom:1px solid #eee">${x}</div>`).join(''):'<div class="empty">Na teraz nic pilnego. ✓</div>';
-}
-function renderAll(){renderRiders();renderHorses();renderInstructors();renderPasses();renderGroups();refreshSelects();renderSchedule();renderStart()}
-
-function riderSearchText(r){return `${r.name||''} ${r.phone||''} ${r.level||''}`.toLocaleLowerCase('pl-PL')}
-function filterPassRiders(){
-  let input=$('passRiderSearch'), box=$('passRiderResults'), sel=$('passRider');
-  if(!input||!box||!sel)return;
-  let q=input.value.trim().toLocaleLowerCase('pl-PL');
-  let matches=riders.filter(r=>!q||riderSearchText(r).includes(q));
-  let old=sel.value;
-  sel.innerHTML='<option value="">Wybierz jeźdźca</option>';
-  matches.forEach(r=>sel.add(new Option(`${r.name}${r.phone?' • '+r.phone:''}`,r.id)));
-  if([...sel.options].some(o=>o.value===old))sel.value=old;
-  box.innerHTML='';
-  if(!q){box.style.display='none';return}
-  box.style.display='block';
-  if(!matches.length){box.innerHTML='<div class="quick-empty">Brak pasującego jeźdźca.</div>';return}
-  matches.slice(0,12).forEach(r=>{
-    let b=document.createElement('button'); b.type='button'; b.className='quick-result';
-    b.innerHTML=`<b>${esc(r.name||'')}</b>${r.phone?`<br><span class="muted">${esc(r.phone)}</span>`:''}`;
-    b.onclick=()=>selectPassRider(r.id); box.appendChild(b);
-  });
-}
-function selectPassRider(id){
-  let r=riders.find(x=>x.id===id); if(!r)return;
-  let sel=$('passRider');
-  if(![...sel.options].some(o=>o.value===id))sel.add(new Option(`${r.name}${r.phone?' • '+r.phone:''}`,r.id));
-  sel.value=id;
-  $('passRiderSearch').value=r.name||'';
-  $('passRiderResults').style.display='none';
-  passRiderChanged();
-}
-function passRiderChanged(){
-  let id=$('passRider')?.value||'';
-  if(!id)return;
-  let r=riders.find(x=>x.id===id);
-  if(r && $('passRiderSearch')) $('passRiderSearch').value=r.name||'';
-}
-
-function filterGroupRiders(){
-  let input=$('groupRiderSearch'), box=$('groupRiderResults');
-  if(!input||!box)return;
-  let q=input.value.trim().toLocaleLowerCase('pl-PL');
-  let selected=new Set(currentGroupMemberValues().filter(Boolean));
-  let matches=riders.filter(r=>(!q||riderSearchText(r).includes(q))&&!selected.has(r.id));
-  box.innerHTML='';
-  if(!q){box.style.display='none';return}
-  box.style.display='block';
-  if(!matches.length){box.innerHTML='<div class="quick-empty">Brak pasującego jeźdźca albo osoba jest już w grupie.</div>';return}
-  matches.slice(0,12).forEach(r=>{
-    let b=document.createElement('button'); b.type='button'; b.className='quick-result';
-    b.innerHTML=`<b>${esc(r.name||'')}</b>${r.phone?`<br><span class="muted">${esc(r.phone)}</span>`:''}`;
-    b.onclick=()=>addGroupRiderQuick(r.id); box.appendChild(b);
-  });
-}
-function addGroupRiderQuick(id){
-  let selects=[...document.querySelectorAll('#groupMembers select')];
-  if(selects.some(s=>s.value===id)){alert('Ten jeździec jest już w grupie.');return}
-  let free=selects.find(s=>!s.value);
-  if(!free){alert('W grupie jest już 6 osób.');return}
-  free.value=id;
-  if($('groupRiderSearch'))$('groupRiderSearch').value='';
-  if($('groupRiderResults'))$('groupRiderResults').style.display='none';
-}
-
-function renderRiders(){let q=($('riderSearch')?.value||'').trim().toLocaleLowerCase('pl-PL');let filtered=q?riders.filter(r=>riderSearchText(r).includes(q)):riders;let summary=$('riderSearchSummary');if(summary)summary.textContent=q?`Znaleziono: ${filtered.length} z ${riders.length}`:`Liczba jeźdźców: ${riders.length}`;$('ridersTable').innerHTML=filtered.length?filtered.map(r=>`<tr><td>👤 ${esc(r.name)}</td><td>${esc(r.phone)}</td><td>${esc(r.level)}</td><td><div class="actions"><button class="blue" onclick="openRiderCard('${r.id}')">Karta</button>${r.phone?`<button class="green" onclick="sendSms('${r.id}')">📱 SMS</button>`:''}<button class="gray" onclick="editRider('${r.id}')">Edytuj</button><button class="red" onclick="deleteRider('${r.id}')">Usuń</button></div></td></tr>`).join(''):`<tr><td colspan="4" class="empty">${q?'Brak jeźdźców pasujących do wyszukiwania.':'Brak jeźdźców.'}</td></tr>`}
-async function addRider(){let name=$('riderName').value.trim();if(!name)return alert('Wpisz imię i nazwisko.');let editId=$('riderEditId').value;if(editId){let r=riders.find(x=>x.id===editId);if(r){r.name=name;r.phone=$('riderPhone').value.trim();r.level=$('riderLevel').value}}else{riders.push({id:uid(),name,phone:$('riderPhone').value.trim(),level:$('riderLevel').value})}cancelRiderEdit();renderAll();await saveAll()}
-function editRider(id){let r=riders.find(x=>x.id===id);if(!r)return;$('riderEditId').value=id;$('riderName').value=r.name||'';$('riderPhone').value=r.phone||'';$('riderLevel').value=r.level||'Początkujący';$('riderSaveBtn').textContent='💾 Zapisz zmiany';$('riderCancelBtn').style.display='inline-block';showPage('jezdzcy');window.scrollTo({top:0,behavior:'smooth'})}
-function cancelRiderEdit(){$('riderEditId').value='';$('riderName').value='';$('riderPhone').value='';$('riderLevel').value='Początkujący';$('riderSaveBtn').textContent='＋ Dodaj jeźdźca';$('riderCancelBtn').style.display='none'}
-function openRiderCard(id){
-  let r=riders.find(x=>x.id===id);if(!r)return;
-  let rr=rides.filter(x=>x.rider===id);
-  let pp=passes.filter(x=>x.rider===id);
-  let today=fmt(new Date());
-  let completed=rr.filter(x=>(x.status||'planned')==='completed').length;
-  let noshow=rr.filter(x=>(x.status||'planned')==='noshow').length;
-  let rescheduled=rr.filter(x=>(x.status||'planned')==='rescheduled').length;
-  let active=pp.filter(p=>passState(p).active);
-  $('riderCardTitle').textContent='👤 '+(r.name||'Jeździec');
-  $('riderCardBody').innerHTML=`
-    <div class="card">
-      <b>Telefon:</b> ${esc(r.phone||'—')}<br>${r.phone?`<button class="blue" style="margin-top:10px" onclick="sendSms('${r.id}')">📱 Wyślij SMS</button>`:''}<br>
-      <b>Poziom:</b> ${esc(r.level||'—')}
-    </div>
-    <div class="card">
-      <h3>📊 Podsumowanie jazd</h3>
-      <div><b>Wszystkie zapisane jazdy:</b> ${rr.length}</div>
-      <div><b>Odbyte:</b> ${completed}</div>
-      <div><b>Przełożone:</b> ${rescheduled}</div>
-      <div><b>Nieobecności bez odwołania:</b> ${noshow}</div>
-    </div>
-    <div class="card">
-      <h3>🎟️ Karnet</h3>
-      <div><b>Czy ma aktywny karnet:</b> ${active.length?'<span class="badge green">TAK</span>':'<span class="badge red">NIE</span>'}</div>
-      <div style="margin-top:8px"><b>Liczba aktywnych karnetów:</b> ${active.length}</div>
-      ${pp.length?pp.map(p=>`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee">
-        ${esc(p.total)} jazd • wykorzystane ${esc(p.used||0)} • zostało ${Math.max(0,Number(p.total)-Number(p.used||0))} • ${esc(p.price||0)} zł • ${paymentLabel(p)} • ważny do ${esc(normalizeDate(p.end)||'—')}
-      </div>`).join(''):'<div class="muted" style="margin-top:8px">Brak karnetów.</div>'}
-    </div>
-    <div class="card">
-      <h3>🏇 Historia jazd</h3>
-      ${rr.length?rr.slice().sort((a,b)=>String((b.date||'')+(b.time||'')).localeCompare(String((a.date||'')+(a.time||'')))).map(x=>`<div style="margin-bottom:6px">
-        ${esc(normalizeDate(x.date)||'')} ${esc(normalizeTime(x.time)||'')} • ${esc(rideLabel(x.type))} • ${rideStatusBadge(x)} • ${esc(x.price||0)} zł
-      </div>`).join(''):'<div class="muted">Brak zapisanych jazd.</div>'}
-    </div>`;
-  $('riderCardModal').classList.add('show')
-}
-function closeRiderCard(){$('riderCardModal').classList.remove('show')}
-async function deleteRider(id){if(!confirm('Usunąć jeźdźca?'))return;riders=riders.filter(x=>x.id!==id);renderAll();await saveAll()}
-
-function renderHorses(){$('horsesTable').innerHTML=horses.length?horses.map(h=>`<tr><td>🐴 ${esc(h.name)}</td><td>${esc(h.type)}</td><td><button class="red" onclick="deleteHorse('${h.id}')">Usuń</button></td></tr>`).join(''):'<tr><td colspan="3" class="empty">Brak koni.</td></tr>'}
-async function addHorse(){let name=$('horseName').value.trim();if(!name)return alert('Wpisz imię konia.');horses.push({id:uid(),name,type:$('horseType').value});$('horseName').value='';renderAll();await saveAll()}
-async function deleteHorse(id){if(!confirm('Usunąć konia?'))return;horses=horses.filter(x=>x.id!==id);renderAll();await saveAll()}
-function renderInstructors(){
-  let month=fmt(new Date()).slice(0,7);
-  $('instructorsTable').innerHTML=instructors.length?instructors.map(i=>{
-    let done=rides.filter(r=>r.instructor===i.id&&(r.status||'planned')==='completed');
-    let monthDone=done.filter(r=>normalizeDate(r.date).slice(0,7)===month).length;
-    return `<tr>
-      <td>🧑‍🏫 ${esc(i.name)}</td>
-      <td>${esc(i.type)}</td>
-      <td><b>${monthDone}</b></td>
-      <td><b>${done.length}</b></td>
-      <td><button class="red" onclick="deleteInstructor('${i.id}')">Usuń</button></td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="5" class="empty">Brak instruktorów.</td></tr>'
-}
-async function addInstructor(){let name=$('instructorName').value.trim();if(!name)return alert('Wpisz imię instruktora.');instructors.push({id:uid(),name,type:$('instructorType').value});$('instructorName').value='';renderAll();await saveAll()}
-async function deleteInstructor(id){if(!confirm('Usunąć instruktora?'))return;instructors=instructors.filter(x=>x.id!==id);renderAll();await saveAll()}
-
-function paymentLabel(p){return (p.paymentStatus||'paid')==='paid'?'<span class="badge green">Zapłacony</span>':'<span class="badge orange">Do zapłaty</span>'}
-function passState(p){
-  let today=fmt(new Date()),end=normalizeDate(p.end),done=Number(p.used)>=Number(p.total),expired=!!(end&&end<today);
-  return {done,expired,active:!done&&!expired};
-}
-function renderPasses(){
-  let active=passes.filter(p=>passState(p).active);
-  let archived=passes.filter(p=>!passState(p).active);
-  let ac=$('activePassCount'),ar=$('archivePassCount');
-  if(ac)ac.textContent=active.length;
-  if(ar)ar.textContent=archived.length;
-  $('passesTable').innerHTML=active.length?active.map(p=>{
-    let r=riders.find(x=>x.id===p.rider),left=Math.max(0,Number(p.total)-Number(p.used||0));
-    return `<tr><td><b>${esc(r?r.name:p.rider)}</b></td><td>${p.used||0} / ${p.total}</td><td><span class="badge green"><b>${left}</b> ${left===1?'jazda':'jazdy'}</span></td><td>${Number(p.price||0)} zł</td><td>${paymentLabel(p)}<div class="actions"><button class="gray" onclick="togglePassPayment('${p.id}')">${(p.paymentStatus||'paid')==='paid'?'Oznacz: do zapłaty':'Oznacz: zapłacony'}</button></div></td><td>${esc(normalizeDate(p.end)||'—')}</td><td><button class="red" onclick="deletePass('${p.id}')">Usuń</button></td></tr>`;
-  }).join(''):'<tr><td colspan="7" class="empty">Brak aktywnych karnetów.</td></tr>';
-  let archiveTable=$('passesArchiveTable');
-  if(archiveTable)archiveTable.innerHTML=archived.length?archived.map(p=>{
-    let r=riders.find(x=>x.id===p.rider),s=passState(p),status=s.done?'<span class="badge red">Wykorzystany</span>':'<span class="badge red">Wygasł</span>';
-    return `<tr><td><b>${esc(r?r.name:p.rider)}</b></td><td>${p.used||0} / ${p.total}</td><td>${Number(p.price||0)} zł</td><td>${paymentLabel(p)}</td><td>${esc(normalizeDate(p.end)||'—')}</td><td>${status}</td><td><button class="red" onclick="deletePass('${p.id}')">Usuń</button></td></tr>`;
-  }).join(''):'<tr><td colspan="7" class="empty">Archiwum jest puste.</td></tr>';
-}
-async function togglePassPayment(id){
-  let p=passes.find(x=>x.id===id);if(!p)return;
-  p.paymentStatus=(p.paymentStatus||'paid')==='paid'?'unpaid':'paid';
-  setPaymentOverride(id,p.paymentStatus);persistLocal(true);
-  renderAll();
-  await saveAll();
-}
-async function addPass(){let rider=$('passRider').value,total=Number($('passTotal').value),start=$('passStart').value,end=$('passEnd').value,price=Number($('passPrice').value||0),paymentStatus=$('passPayment').value||'paid';if(!rider||!start||!end)return alert('Uzupełnij jeźdźca i daty.');let p={id:uid(),rider,total,used:0,start,end,price,paymentStatus};if($('passIncludePrevious').checked){let candidates=rides.filter(r=>r.rider===rider&&!r.passId&&normalizeDate(r.date)>=start&&normalizeDate(r.date)<=fmt(new Date())&&(r.status||'planned')!=='rescheduled').sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time))).slice(0,total);candidates.forEach(r=>{r.passId=p.id;r.price=0;p.used++})}passes.push(p);setPaymentOverride(p.id,p.paymentStatus);$('passIncludePrevious').checked=false;renderAll();await saveAll();alert('Karnet dodany'+(p.used?` i zaliczono ${p.used} wcześniejszych jazd.`:'.'))}
-async function deletePass(id){if(!confirm('Usunąć karnet? Jazdy przypisane do tego karnetu wrócą do rozliczenia bez karnetu.'))return;rides.filter(r=>r.passId===id).forEach(r=>r.passId='');passes=passes.filter(x=>x.id!==id);removePaymentOverride(id);renderAll();await saveAll()}
-function activePasses(rider,date=fmt(new Date())){return passes.filter(p=>p.rider===rider&&Number(p.used)<Number(p.total)&&(!p.start||p.start<=date)&&(!p.end||p.end>=date))}
-
-
-function openGroupAttendance(id){
-  let g=groups.find(x=>x.id===id);if(!g)return;
-  $('attendanceGroupId').value=id;$('attendanceTitle').textContent='✓ '+(g.name||'Grupa')+' — obecność';$('attendanceDate').value=fmt(new Date());
-  let ins=$('attendanceInstructor');ins.innerHTML='<option value="">Wybierz instruktora</option>';instructors.forEach(i=>ins.add(new Option(i.name,i.id)));ins.value=g.instructor||'';
-  let box=$('attendanceRows');box.innerHTML='';
-  (g.members||[]).forEach(riderId=>{let r=riders.find(x=>x.id===riderId);if(!r)return;let row=document.createElement('div');row.className='card attendance-row';row.dataset.rider=riderId;row.innerHTML=`<b>${esc(r.name)}</b><div class="grid2" style="margin-top:8px"><div><label>Status</label><select class="att-status"><option value="completed">Odbyta</option><option value="rescheduled">Przełożona</option><option value="noshow">Nieobecność bez odwołania</option></select></div><div><label>Rozliczenie</label><select class="att-pay"><option value="auto">Automatycznie</option><option value="pass">Karnet</option><option value="single">Pojedyncza jazda</option></select></div></div>`;box.appendChild(row)});
-  if(!(g.members||[]).length)box.innerHTML='<div class="empty">Ta grupa nie ma jeźdźców.</div>';
-  $('groupAttendanceModal').classList.add('show');
-}
-function closeGroupAttendance(){$('groupAttendanceModal').classList.remove('show')}
-async function saveGroupAttendance(){
-  let g=groups.find(x=>x.id===$('attendanceGroupId').value),date=$('attendanceDate').value,instructor=$('attendanceInstructor').value;
-  if(!g||!date||!instructor)return alert('Wybierz datę i instruktora.');
-  let rows=[...document.querySelectorAll('#attendanceRows .attendance-row')];
-  for(let row of rows){
-    let rider=row.dataset.rider,status=row.querySelector('.att-status').value,pay=row.querySelector('.att-pay').value;
-    let existing=rides.find(x=>x.rider===rider&&normalizeDate(x.date)===date&&x.group===g.id);
-    if(existing){existing.status=status;existing.instructor=instructor;setRideStatusOverride(existing.id,status);if(status==='rescheduled')existing.rescheduleMonth=date.slice(0,7);continue}
-    let passId='',price=Number(priceSettings.indywidualna||0),ap=activePasses(rider,date);
-    let usePass=pay==='pass'||(pay==='auto'&&ap.length>0);
-    if(usePass&&ap.length){let p=ap[0];passId=p.id;if(status==='completed'||status==='noshow')p.used=Math.min(Number(p.total)||0,Number(p.used||0)+1);price=0}
-    let nr={id:uid(),date,time:normalizeTime(g.time||'14:00'),type:'grupowa',rider,horse:'',instructor,group:g.id,fixed:false,price,passId,status,rescheduleMonth:status==='rescheduled'?date.slice(0,7):''};rides.push(nr);setRideStatusOverride(nr.id,status);
+    try {
+      const saved = localStorage.getItem(cacheKey);
+      if (saved && saved.includes("function renderAll()")) return saved;
+    } catch (_) {}
+    throw new Error("Nie udało się wczytać głównego programu. Sprawdź internet i odśwież stronę.");
   }
-  persistLocal(true);renderAll();await saveAll();closeGroupAttendance();alert('Lista obecności zapisana.');
-}
 
-let groupDayFilter='all';
-function setGroupDayFilter(day){groupDayFilter=day;renderGroups()}
-function renderGroups(){
-  let days=['Niedziela','Poniedziałek','Wtorek','Środa','Czwartek','Piątek','Sobota'];
-  let sortedGroups=groups.slice().sort((a,b)=>{
-    let da=Number(a.day),db=Number(b.day),oa=da===0?7:da,ob=db===0?7:db;
-    if(oa!==ob)return oa-ob;
-    return normalizeTime(a.time).localeCompare(normalizeTime(b.time))
-  });
-  if(groupDayFilter!=='all')sortedGroups=sortedGroups.filter(g=>Number(g.day)===Number(groupDayFilter));
-  let byDay={};
-  sortedGroups.forEach(g=>{let d=Number(g.day);(byDay[d]||(byDay[d]=[])).push(g)});
-  let order=[1,2,3,4,5,6,0];
-  let html=order.filter(d=>byDay[d]&&byDay[d].length).map(d=>`
-    <div class="group-day-section">
-      <div class="group-day-title">${days[d]}</div>
-      ${byDay[d].map(g=>{
-        let memberNames=(g.members||[]).map(id=>{let r=riders.find(x=>x.id===id);return r?r.name:id});
-        let count=memberNames.length,left=Math.max(0,6-count),full=count>=6;
-        let i=instructors.find(x=>x.id===g.instructor);
-        return `<div class="group-card">
-          <div class="group-card-top">
-            <div class="group-card-main">
-              <div class="group-time-badge">${esc(normalizeTime(g.time))}</div>
-              <div>
-                <div class="group-card-name">${esc(g.name)}</div>
-                <div class="group-card-instructor">🧑‍🏫 ${esc(i?i.name:'—')}</div>
-                <span class="group-count ${full?'full':''}">👥 ${count}/6 — ${full?'PEŁNA':left+' wolne '+(left===1?'miejsce':'miejsca')}</span>
-              </div>
-            </div>
-          </div>
-          <div class="group-members"><b>Jeźdźcy:</b> ${memberNames.length?memberNames.map(esc).join(', '):'<span class="muted">brak</span>'}</div>
-          <div class="group-card-actions">
-            <button class="blue" onclick="openGroupAttendance('${g.id}')">Obecność</button>
-            <button class="green" onclick="openGroupSchedule('${g.id}')">Dodaj do grafiku</button>
-            <button onclick="editGroup('${g.id}')">Edytuj</button>
-            <button class="red" onclick="deleteGroup('${g.id}')">Usuń</button>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`).join('');
-  $('groupsTable').innerHTML=html||'<div class="empty">Brak grup dla wybranego dnia.</div>';
-}
-async function saveGroup(){
-  let name=$('groupName').value.trim(),day=Number($('groupDay').value),time=normalizeTime($('groupTime').value),instructor=$('groupInstructor').value;
-  let members=currentGroupMemberValues().filter(Boolean);
-  if(!name)return alert('Wpisz nazwę grupy.');
-  if(!time)return alert('Wybierz godzinę.');
-  if(!instructor)return alert('Wybierz instruktora.');
-  if(new Set(members).size!==members.length)return alert('Ta sama osoba została dodana do grupy więcej niż raz.');
-  let editId=$('groupEditId').value;
-  if(editId){
-    let g=groups.find(x=>x.id===editId);if(!g)return alert('Nie znaleziono tej grupy. Odśwież stronę i spróbuj ponownie.');
-    g.name=name;g.day=day;g.time=time;g.instructor=instructor;g.members=members;
-  }else{
-    groups.push({id:uid(),name,day,time,instructor,members});
+  try {
+    const original = await getOriginal();
+    const endBody = original.toLowerCase().lastIndexOf("</body>");
+    if (endBody === -1) throw new Error("Brak znacznika końca strony w programie.");
+    const safeModule = voiceModule.replace(/<\/script/gi, "<\\/script");
+    const scriptTag = "<scr" + "ipt>" + safeModule + "</scr" + "ipt>";
+    const combined = original.slice(0,endBody) + "\n" + scriptTag + "\n" + original.slice(endBody);
+    document.open();
+    document.write(combined);
+    document.close();
+  } catch (error) {
+    msg.textContent = error.message || "Błąd ładowania aplikacji.";
+    msg.style.color = "#b91c1c";
+    const btn = document.createElement("button");
+    btn.textContent = "Spróbuj ponownie";
+    btn.onclick = () => location.reload();
+    msg.after(btn);
   }
-  cancelGroupEdit();renderAll();await saveAll();alert(editId?'Zmiany w grupie zostały zapisane.':'Grupa została dodana.');
-}
-function editGroup(id){let g=groups.find(x=>x.id===id);if(!g)return;$('groupEditId').value=id;$('groupName').value=g.name||'';$('groupDay').value=String(Number(g.day));$('groupTime').value=normalizeTime(g.time);$('groupInstructor').value=g.instructor||'';createMemberSelectors(g.members||[]);$('groupSaveBtn').textContent='💾 Zapisz zmiany';$('groupCancelBtn').style.display='inline-block';showPage('grupy');window.scrollTo({top:0,behavior:'smooth'})}
-function cancelGroupEdit(){if($('groupRiderSearch'))$('groupRiderSearch').value='';if($('groupRiderResults'))$('groupRiderResults').style.display='none';$('groupEditId').value='';$('groupName').value='';$('groupDay').value='1';$('groupTime').value='07:00';$('groupInstructor').value='';createMemberSelectors([]);$('groupSaveBtn').textContent='＋ Zapisz grupę';$('groupCancelBtn').style.display='none'}
-async function deleteGroup(id){if(!confirm('Usunąć grupę?'))return;groups=groups.filter(x=>x.id!==id);renderAll();await saveAll()}
-function nextDateForWeekday(day){let d=new Date();d.setHours(12,0,0,0);let diff=(Number(day)-d.getDay()+7)%7;return fmt(addDays(d,diff))}
-function groupHorseSearch(input){let select=input.parentElement.querySelector('.group-horse'),old=select.value,q=input.value.trim().toLocaleLowerCase('pl-PL');select.innerHTML='<option value="">— wybierz konia —</option>';horses.filter(h=>!q||String(h.name||'').toLocaleLowerCase('pl-PL').includes(q)).forEach(h=>select.add(new Option(h.name,h.id)));if([...select.options].some(o=>o.value===old))select.value=old}
-function openGroupSchedule(id){let g=groups.find(x=>x.id===id);if(!g)return;if(!(g.members||[]).length)return alert('Ta grupa nie ma jeszcze jeźdźców.');$('groupScheduleId').value=id;$('groupScheduleTitle').textContent='📅 '+(g.name||'Grupa')+' — dodaj do grafiku';$('groupScheduleDate').value=nextDateForWeekday(g.day);$('groupScheduleTime').value=normalizeTime(g.time);let ins=$('groupScheduleInstructor');ins.innerHTML='<option value="">Wybierz instruktora</option>';instructors.forEach(i=>ins.add(new Option(i.name,i.id)));ins.value=g.instructor||'';$('groupScheduleFixed').value='true';let box=$('groupScheduleMembers');box.innerHTML='';(g.members||[]).forEach(riderId=>{let r=riders.find(x=>x.id===riderId);if(!r)return;let row=document.createElement('div');row.className='group-schedule-row';row.innerHTML=`<input class="group-going" type="checkbox" checked data-rider="${esc(r.id)}"><div class="rider-name">${esc(r.name)}</div><div class="group-horse-tools"><input class="group-horse-search" type="search" placeholder="🔎 Wpisz imię konia…" oninput="groupHorseSearch(this)"><select class="group-horse" data-rider="${esc(r.id)}"><option value="">— wybierz konia —</option>${horses.map(h=>`<option value="${esc(h.id)}">${esc(h.name)}</option>`).join('')}</select></div>`;box.appendChild(row)});$('groupScheduleModal').classList.add('show')}
-function closeGroupSchedule(){$('groupScheduleModal').classList.remove('show')}
-async function saveWholeGroup(){let g=groups.find(x=>x.id===$('groupScheduleId').value);if(!g)return;let date=$('groupScheduleDate').value,time=normalizeTime(g.time),instructor=$('groupScheduleInstructor').value,fixed=$('groupScheduleFixed').value==='true';if(!date||!instructor)return alert('Wybierz datę i instruktora.');let rows=[...document.querySelectorAll('#groupScheduleMembers .group-schedule-row')].filter(row=>row.querySelector('.group-going').checked);if(!rows.length)return alert('Zaznacz przynajmniej jedną osobę.');let selected=[];for(let row of rows){let rider=row.querySelector('.group-going').dataset.rider,horse=row.querySelector('.group-horse').value;if(!horse){let rr=riders.find(x=>x.id===rider);return alert('Wybierz konia dla: '+(rr?rr.name:'jeźdźca'));}selected.push({rider,horse})}if(new Set(selected.map(x=>x.horse)).size!==selected.length)return alert('Ten sam koń został wybrany dla dwóch osób.');let occupied=rides.filter(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time);for(let x of selected){if(occupied.some(r=>r.horse===x.horse))return alert('Jeden z wybranych koni jest już zajęty.');if(occupied.some(r=>r.rider===x.rider))return alert('Jeden z jeźdźców ma już jazdę o tej godzinie.')}let newRides=[];selected.forEach(x=>{let passId='',price=0,ap=activePasses(x.rider,date);if(ap.length){let p=ap[0];p.used=Number(p.used||0)+1;passId=p.id}newRides.push({id:uid(),date,time,type:'grupowa',rider:x.rider,horse:x.horse,instructor,group:g.id,fixed,price,passId})});rides.push(...newRides);renderAll();closeGroupSchedule();await saveAll()}
-
-function ridePrice(type){return Number(priceSettings[type]||0)}
-function rideLabel(t){return{indywidualna:'Pojedyncza',grupowa:'Grupowa',lonza:'Lonża',sport:'Sport',oprowadzanka:'Oprowadzanka',hipoterapia:'Hipoterapia'}[t]||t}
-function rideClass(t){return t==='grupowa'?'group':t==='lonza'?'longe':t==='sport'?'sport':t==='hipoterapia'?'hipoterapia':''}
-function filterRideRiders(){
-  let q=$('rideRiderSearch').value.trim().toLocaleLowerCase('pl-PL');
-  let sel=$('rideRider'),old=sel.value,box=$('rideRiderResults');
-  let matches=riders.filter(r=>!q||riderSearchText(r).includes(q));
-  sel.innerHTML='<option value="">Wybierz jeźdźca</option>';
-  matches.forEach(r=>sel.add(new Option(`${r.name}${r.phone?' • '+r.phone:''}`,r.id)));
-  if([...sel.options].some(o=>o.value===old))sel.value=old;
-  box.innerHTML='';
-  if(q){
-    box.style.display='block';
-    if(!matches.length){
-      box.innerHTML='<div class="quick-empty">Brak pasującego jeźdźca.</div>';
-    }else{
-      matches.slice(0,10).forEach(r=>{
-        let b=document.createElement('button');
-        b.type='button';
-        b.className='quick-result';
-        b.innerHTML=`<b>${esc(r.name||'')}</b>${r.phone?`<br><span class="muted">${esc(r.phone)}</span>`:''}`;
-        b.onclick=()=>selectRideRider(r.id);
-        box.appendChild(b);
-      });
-    }
-  }else{
-    box.style.display='none';
-  }
-  rideRiderChanged();
-}
-function selectRideRider(id){
-  let r=riders.find(x=>x.id===id);if(!r)return;
-  let sel=$('rideRider');
-  if(![...sel.options].some(o=>o.value===id))sel.add(new Option(`${r.name}${r.phone?' • '+r.phone:''}`,r.id));
-  sel.value=id;
-  $('rideRiderSearch').value=r.name||'';
-  $('rideRiderResults').style.display='none';
-  rideRiderChanged();
-}
-function filterRideHorses(){let q=$('rideHorseSearch').value.trim().toLocaleLowerCase('pl-PL');fillSelect('rideHorse',horses,'Wybierz konia',q)}
-function filterRideInstructors(){let q=$('rideInstructorSearch').value.trim().toLocaleLowerCase('pl-PL');fillSelect('rideInstructor',instructors,'Wybierz instruktora',q)}
-function lastDayOfMonth(dateStr){let d=new Date((dateStr||fmt(new Date()))+'T12:00:00');return fmt(new Date(d.getFullYear(),d.getMonth()+1,0,12))}
-function rideRiderChanged(){let rider=$('rideRider').value,date=$('rideDate').value||fmt(new Date()),sel=$('ridePass');sel.innerHTML='<option value="">Bez karnetu</option>';activePasses(rider,date).forEach(p=>sel.add(new Option(`${p.used||0}/${p.total} • ${p.price||0} zł • ${(p.paymentStatus||'paid')==='paid'?'zapłacony':'do zapłaty'} • do ${p.end||'—'}`,p.id)));if(rider){sel.add(new Option('＋ Nowy karnet 4 jazdy','__new4'));sel.add(new Option('＋ Nowy karnet 5 jazd','__new5'))}ridePassChanged()}
-function ridePassChanged(){let v=$('ridePass').value,isNew=v==='__new4'||v==='__new5';['rideNewPassPaymentWrap','rideNewPassPriceWrap','rideNewPassEndWrap'].forEach(id=>$(id).style.display=isNew?'block':'none');if(isNew){let n=v==='__new4'?4:5;$('rideNewPassPrice').value=n===4?Number(priceSettings.pass4||0):Number(priceSettings.pass5||0);$('rideNewPassEnd').value=lastDayOfMonth($('rideDate').value||fmt(new Date()));$('rideNewPassPayment').value='unpaid'}}
-function rideTypeChanged(){let t=$('rideType').value;$('rideGroup').disabled=t!=='grupowa';if(t!=='grupowa')$('rideGroup').value='';let base=t==='grupowa'?0:ridePrice(t);$('rideCustomPrice').value=base;$('ridePrice').innerHTML=`<b>Cena bazowa:</b> ${base} zł. Możesz wpisać inną kwotę ręcznie.`}
-function openRideModal(){$('rideDate').value=fmt(currentDate);$('rideRiderSearch').value='';$('rideHorseSearch').value='';$('rideInstructorSearch').value='';filterRideRiders();filterRideHorses();filterRideInstructors();let rg=$('rideGroup');rg.innerHTML='<option value="">Bez grupy</option>';groups.forEach(g=>rg.add(new Option(g.name,g.id)));rideTypeChanged();$('ridePass').innerHTML='<option value="">Bez karnetu</option>';ridePassChanged();$('rideModal').classList.add('show');setTimeout(()=>$('rideRiderSearch').focus(),100)}
-function closeRideModal(){$('rideModal').classList.remove('show');if($('rideRiderResults'))$('rideRiderResults').style.display='none'}
-async function saveRide(){let type=$('rideType').value,date=$('rideDate').value,time=$('rideTime').value,rider=$('rideRider').value,horse=$('rideHorse').value,instructor=$('rideInstructor').value,group=$('rideGroup').value,fixed=$('rideFixed').value==='true';if(!date||!time||!rider||!horse||!instructor)return alert('Uzupełnij datę, godzinę, jeźdźca, konia i instruktora.');if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.horse===horse&&(r.status||'planned')!=='rescheduled')){let h=horses.find(x=>x.id===horse);return alert('Koń '+(h?h.name:'')+' jest już zajęty o tej godzinie.')}if(rides.some(r=>normalizeDate(r.date)===date&&normalizeTime(r.time)===time&&r.rider===rider&&(r.status||'planned')!=='rescheduled'))return alert('Ten jeździec ma już jazdę o tej godzinie.');let choice=$('ridePass').value,passId='',price=Number($('rideCustomPrice').value||0);if(choice==='__new4'||choice==='__new5'){let total=choice==='__new4'?4:5;let p={id:uid(),rider,total,used:0,start:date,end:$('rideNewPassEnd').value||lastDayOfMonth(date),price:Number($('rideNewPassPrice').value||0),paymentStatus:$('rideNewPassPayment').value||'unpaid'};passes.push(p);passId=p.id;p.used=1;price=0}else if(choice){let p=passes.find(x=>x.id===choice);if(!p)return alert('Wybrany karnet nie istnieje.');if(Number(p.used)>=Number(p.total))return alert('Ten karnet jest już wykorzystany.');p.used=Number(p.used||0)+1;passId=p.id;price=0}rides.push({id:uid(),date,time,type,rider,horse,instructor,group,fixed,price,passId,status:'planned'});closeRideModal();renderAll();await saveAll()}
-function rescheduleMonthKey(r){return normalizeDate(r.date).slice(0,7)}
-async function resetRideStatus(id){
-  let r=rides.find(x=>x.id===id);if(!r)return;
-  r.status='planned';
-  removeRideStatusOverride(id);
-  persistLocal(true);
-  renderAll();
-  await saveAll();
-}
-async function markRideCompleted(id){let r=rides.find(x=>x.id===id);if(!r)return;r.status='completed';setRideStatusOverride(id,'completed');persistLocal(true);renderAll();await saveAll()}
-async function markRideNoShow(id){let r=rides.find(x=>x.id===id);if(!r)return;if(!confirm('Oznaczyć jako nieobecność bez odwołania? Jeśli jazda jest z karnetu, pozostanie wykorzystana.'))return;r.status='noshow';setRideStatusOverride(id,'noshow');persistLocal(true);renderAll();await saveAll()}
-async function rescheduleRide(id){let r=rides.find(x=>x.id===id);if(!r)return;let month=rescheduleMonthKey(r);if(r.passId){let already=rides.some(x=>x.id!==id&&x.rider===r.rider&&x.status==='rescheduled'&&x.rescheduleMonth===month);if(already)return alert('Ten jeździec wykorzystał już jedno przełożenie z karnetu w tym miesiącu.');let p=passes.find(x=>x.id===r.passId);if(p&&Number(p.used)>0)p.used=Number(p.used)-1}if(!confirm('Oznaczyć jazdę jako przełożoną? Termin przestanie zużywać jazdę z karnetu. Nowy termin dodasz jako nową jazdę.'))return;r.status='rescheduled';r.rescheduleMonth=month;setRideStatusOverride(id,'rescheduled');persistLocal(true);renderAll();await saveAll()}
-async function deleteRide(id){let r=rides.find(x=>x.id===id);if(!r||!confirm('Usunąć tę jazdę?'))return;if(r.passId&&r.status!=='rescheduled'){let p=passes.find(x=>x.id===r.passId);if(p&&Number(p.used)>0)p.used=Number(p.used)-1}rides=rides.filter(x=>x.id!==id);removeRideStatusOverride(id);renderAll();await saveAll()}
-function rideStatusBadge(r){let s=r.status||'planned';return s==='completed'?'<span class="badge green">ODBYTA</span>':s==='rescheduled'?'<span class="badge blue">PRZEŁOŻONA</span>':s==='noshow'?'<span class="badge red">NIEOBECNOŚĆ — PRZEPADA</span>':'<span class="badge orange">PLANOWANA</span>'}
-function renderSchedule(){let head=$('scheduleHead'),body=$('scheduleBody');head.innerHTML='';body.innerHTML='';let start=monday(currentDate),hr='<tr><th>Godz.</th>';for(let d=0;d<7;d++){let dt=addDays(start,d);hr+=`<th>${dayName(dt)}<br><span class="muted">${niceDate(dt)}</span></th>`}head.innerHTML=hr+'</tr>';for(let h=7;h<=20;h++)for(let m of [0,30]){let time=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'),tr=document.createElement('tr');tr.innerHTML=`<td>${time}</td>`;for(let d=0;d<7;d++){let ds=fmt(addDays(start,d)),td=document.createElement('td');rides.filter(r=>normalizeDate(r.date)===ds&&normalizeTime(r.time)===time).forEach(r=>{let rr=riders.find(x=>x.id===r.rider),hh=horses.find(x=>x.id===r.horse),ii=instructors.find(x=>x.id===r.instructor),gg=groups.find(x=>x.id===r.group),div=document.createElement('div');div.className='ride '+rideClass(r.type);let actions=(r.status||'planned')==='planned'?`<button onclick="markRideCompleted('${r.id}')">✓ Odbyta</button><button onclick="rescheduleRide('${r.id}')">↪ Przełóż</button><button onclick="markRideNoShow('${r.id}')">🚫 Nieobecność</button>`:`<button class="gray" onclick="resetRideStatus('${r.id}')">↶ Cofnij status</button>`;div.innerHTML=`<b>${esc(rr?rr.name:'Jeździec')}</b><small>${rideLabel(r.type)}${gg?' • '+esc(gg.name):''}</small><small>🐴 ${esc(hh?hh.name:'')}</small><small>🧑‍🏫 ${esc(ii?ii.name:'')}</small><small>💰 ${Number(r.price||0)} zł${r.passId?' • karnet':''}</small>${rideStatusBadge(r)}${r.fixed?'<span class="badge">STAŁA</span>':''}${actions}<button onclick="deleteRide('${r.id}')">Usuń</button>`;td.appendChild(div)});tr.appendChild(td)}body.appendChild(tr)}}
-async function copyWeek(){let fixed=rides.filter(r=>r.fixed);if(!fixed.length)return alert('Nie ma stałych jazd do skopiowania.');let next=addDays(monday(currentDate),7),added=0;fixed.forEach(r=>{let old=new Date(r.date+'T12:00:00'),off=old.getDay()===0?6:old.getDay()-1,newDate=fmt(addDays(next,off));if(!rides.some(x=>x.date===newDate&&normalizeTime(x.time)===normalizeTime(r.time)&&x.rider===r.rider&&x.horse===r.horse)){rides.push({...r,id:uid(),date:newDate,time:normalizeTime(r.time),passId:''});added++}});renderAll();await saveAll();alert('Skopiowano '+added+' jazd.')}
-function previousWeek(){currentDate=addDays(currentDate,-7);renderSchedule()}
-function nextWeek(){currentDate=addDays(currentDate,7);renderSchedule()}
-function goToday(){currentDate=new Date();renderSchedule()}
-
-loadLocalPrices();fillTimes();restoreLocal();applyPriceInputs();renderAll();loadAll();setInterval(()=>loadAll(),60000);window.addEventListener('offline',()=>{persistLocal(hasPending());updateConnectionStatus()});window.addEventListener('online',()=>{updateConnectionStatus();if(hasPending())saveAll();else loadAll()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll()});
+})();
 </script>
 </body>
 </html>
